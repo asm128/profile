@@ -52,7 +52,7 @@ The revised page keeps the article groups in JSON and uses shared rendering code
 
 The case also shows a cost that source metrics miss: the user's time spent identifying unnecessary work and steering its replacement. A completed page that required repeated correction cost more than its final files alone reveal.
 
-The [homepage loading and rendering measurements](./evidence/homepage-performance.md) record a direct operational consequence of the finished design. Its four uncompressed first-party resources total 11.1 KiB, approximately 99.6% less payload than the 2025 HTTP Archive median desktop home page. The homepage also reports navigation-through-rendering and DOM-construction time from each visitor's own browser, keeping the variable runtime result separate from the stable source-size measurement.
+The [homepage loading and rendering measurements](./evidence/homepage-performance.md) record a direct operational consequence of the finished design. Its six local resources total 71.8 KiB uncompressed, approximately 97.4% less payload than the 2025 HTTP Archive median desktop home page. Most of that source is the WebGL cube and vendored matrix library; its animated circuit texture is generated at runtime. The homepage also reports navigation-to-DOM-construction and DOM-construction time from each visitor's own browser, keeping the variable runtime result separate from the stable source-size measurement.
 
 ## Concentrated ownership removes repeated risk
 

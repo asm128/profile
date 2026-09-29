@@ -37,8 +37,8 @@ const profileJSON = `{
       "92 commits": "CED graphics prototype, Jan 8–31 2020",
       "Measuring…": "This visit: navigation to profile DOM construction",
       "Measuring render…": "This visit: profile DOM construction",
-      "11.1 KiB": "Uncompressed homepage source",
-      "99.6% smaller": "Than the 2025 median desktop home page"
+      "71.8 KiB": "Uncompressed homepage source",
+      "97.4% smaller": "Than the 2025 median desktop home page"
     }
   },
   "studies": {
@@ -102,13 +102,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const main = document.getElementById("site-main");
   const hero = element("div", "hero");
-  hero.append(element("div", "eyebrow", profile.hero.label));
-  hero.append(element("h1", "", profile.hero.title));
-  hero.append(element("p", "intro", profile.hero.introduction));
+  const heroCopy = element("div", "hero-copy");
+  heroCopy.append(element("div", "eyebrow", profile.hero.label));
+  heroCopy.append(element("h1", "", profile.hero.title));
+  heroCopy.append(element("p", "intro", profile.hero.introduction));
   const actions = element("div", "actions");
   for(const action of profile.hero.actions)
     actions.append(link(action.title, action.url, "button" + (action.secondary ? " secondary" : "")));
-  hero.append(actions);
+  heroCopy.append(actions);
+  hero.append(heroCopy);
+
+  const cubeFigure = element("figure", "hero-cube");
+  const cubeCanvas = element("canvas");
+  cubeCanvas.id = "webgl-canvas";
+  cubeCanvas.width = 240;
+  cubeCanvas.height = 240;
+  cubeCanvas.setAttribute("role", "img");
+  cubeCanvas.setAttribute("aria-label", "Rotating WebGL cube with an animated circuit texture");
+  cubeFigure.append(cubeCanvas);
+  hero.append(cubeFigure);
   main.append(hero);
 
   const services = element("section");
@@ -167,4 +179,5 @@ document.addEventListener("DOMContentLoaded", () => {
   const renderFinished = performance.now();
   metricValues["This visit: navigation to profile DOM construction"].textContent = `${renderFinished.toFixed(1)} ms`;
   metricValues["This visit: profile DOM construction"].textContent = `${(renderFinished - renderStarted).toFixed(1)} ms`;
+  initLogo();
 });
