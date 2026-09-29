@@ -34,8 +34,8 @@ const profileJSON = `{
       "20+ years": "Software development",
       "693 commits": "Reviewed firmware history",
       "8,986 lines": "Final firmware ecosystem reviewed",
-      "3 weekends": "CED graphics development",
-      "Measuring…": "This visit: navigation through profile rendering",
+      "92 commits": "CED graphics prototype, Jan 8–31 2020",
+      "Measuring…": "This visit: navigation to profile DOM construction",
       "Measuring render…": "This visit: profile DOM construction",
       "11.1 KiB": "Uncompressed homepage source",
       "99.6% smaller": "Than the 2025 median desktop home page"
@@ -165,6 +165,6 @@ document.addEventListener("DOMContentLoaded", () => {
   footer.append(link("Curriculum vitae", "./cv.html"));
 
   const renderFinished = performance.now();
-  metricValues["This visit: navigation through profile rendering"].textContent = `${renderFinished.toFixed(1)} ms`;
+  metricValues["This visit: navigation to profile DOM construction"].textContent = `${renderFinished.toFixed(1)} ms`;
   metricValues["This visit: profile DOM construction"].textContent = `${(renderFinished - renderStarted).toFixed(1)} ms`;
 });
