@@ -1,0 +1,56 @@
+(0:00) Continuando con esta serie, vamos a ir poniendo un poco de orden acá, porque yo tengo problemas con eso. (0:13) Vamos a agrupar todas las cosas que estén relacionadas a la ventana en su estructura. (0:22) Voy a ponerle un tamaño, que tal importa.
+(1:27) Algunas correcciones. (1:30) Este último elemento. (1:48) Y lo mismo con el todo, ya diría.
+(1:58) Tengo que tener cosas sueltas. (2:01) No ayuda. (2:33) Bien, ahora que está... (2:36) Ah, esto también.
+(2:53) Endo.Handler. (2:56) Endo.Handler. (2:58) Terminación. (3:00) Aquí y aquí. (3:11) Oh, no termina con una barra.
+(3:17) Ahora sí. (3:20) Uf, lentísimo cuando se dibujan esos rectángulos. (3:24) Bueno, entonces ahora vamos a tener los rectángulos también.
+(3:30) Esto también. (4:04) Y esto podríamos llamarlo una función. (4:33) Que haga esto mismo.
+(4:40) Y va a necesitar el hdc. (4:43) Para llamar a ese píxel. (4:48) Y el color.
+(4:58) Vamos a definir una estructura para el color. (5:13) Que van a ser cuatro bytes. (5:16) Cada uno por un canal.
+(5:21) Y uno para la transparencia. (5:27) Y esto lo va a recibir esto. (5:31) Y... (5:37) Vamos a definir cuatro colores.
+(6:03) Podríamos ponerlo allá. (6:26) Y... (6:35) Llamar a... (6:37) También. (7:01) Entonces ahora necesitaríamos convertir nuestro color.
+(7:17) En formato de unos. (7:27) Porque así nosotros podemos trabajar con los nombres. (7:31) De los canales.
+(7:33) Si no... (7:35) Trabajar con hexadecimales. (7:37) Bueno, parece que todo funciona de la misma manera. (7:41) Que es lo importante en este punto.
+(7:50) Entonces vamos a ver... (7:52) Dibujar alguna otra cosa. (7:55) Por ejemplo un círculo. (8:05) No tenemos el círculo.
+(8:06) Bueno, vamos a usar un círculo. (8:09) Que va a ser parecido al rectángulo. (8:16) Y va a tener un... (8:17) El radio en lugar de esto.
+(8:25) Esto va a comenzar... (8:31) En... (8:55) Vamos a recordar que el rectángulo va a ser... (9:02) Circundante al círculo. (9:05) Y aquí vamos a tener que agregar... (9:21) Tiene que ser... (9:28) Un enterer. (9:39) Consigna.
+(9:41) Y acá lo que necesitamos es calcular... (9:45) La distancia, entonces vamos a agregar una función que se va a llamar... (9:52) Nos va a devolver la longitud del vector. (10:01) Y va a ser... (10:23) X por X. (10:26) Y así por Y. (10:31) Y si es mayor que cero. (10:46) Entonces... (10:47) Lo devolvemos... (10:52) A raíz cuadrada.
+(11:02) Creo, ¿no? (11:05) Bueno, vale, si me acuerdo. (11:11) Entonces... (11:12) Ahora lo que tenemos que hacer es... (11:14) Podríamos agregar una operada... (12:06) Terrestre, ¿no? (12:08) Bien. (12:12) Así podríamos... (12:16) Estos son costos.
+(12:26) Este era menos costos. (12:49) Entonces ahora, si... (13:11) Si la posición... (13:17) Menos... (13:32) A ver... (13:35) Habría que llamar a la función en algún momento, ¿no? (13:37) Porque si no... (13:40) Vamos a dibujar un círculo en... (13:42) Luego de cada cuadrada, encima de cada cuadrada. (13:46) El círculo va a tener... (13:53) La posición del rectángulo.
+(14:06) Más... (14:07) La mitad del... (14:13) Del tamaño del rectángulo. (14:25) Y además... (14:27) Va a tener un radio de dos piezas. (14:43) Posición 80, 50.
+(14:46) X, 0. (14:47) Ah, y porque le estamos dibujando el mismo color. (14:51) Se olvidó ahora. (15:07) Bueno.
+(15:09) Es tan lento que se ve... (15:11) Cómo se dibuja el rectángulo por encima del círculo anterior. (15:14) Pero luego de volver a dibujarse el círculo. (15:24) Bueno, no sé qué va a ser.
+(15:26) ¿No? (15:26) Y aquí ya no era esto. (16:09) Vamos a tomar esto porque es horrible. (16:32) Y está ese límite.
+(17:13) Para que no me digan que se ve horrible. (17:28) Bueno, entonces ahora lo que hay que evitar es... (17:32) Es ese... (17:36) Esa... (17:37) Cosa horrible que pasa... (17:39) Que titila en los círculos. (17:41) Para eso ahora hay que hacer una función.
+(17:45) Para eso lo que tenemos que hacer es... (17:49) Dibujar en un área de memoria propia. (17:52) Y después mostrar el resultado. (17:54) Entonces no se ve mientras... (17:56) El momento en el que cada píxel se va... (17:59) Va sobreescribiendo el anterior.
+(18:02) Porque el problema del setpixel es que... (18:06) Es que aplica el cambio instantáneamente. (18:08) Y por eso también es lento llamarlo cada vez. (18:12) Entonces si nosotros dibujamos a un... (18:14) A un espacio de memoria propia... (18:17) Es mucho más rápido trabajar en ese espacio de memoria.
+(18:20) Y después directamente... (18:23) De una pasada... (18:25) Mostrar todo el resultado. (18:27) Entonces para eso necesitamos un espacio de memoria. (18:34) Con... (18:37) Con el contenido de nuestros... (18:40) Píxeles.
+(18:42) Para mostrar. (18:52) Tenemos... (18:53) Esta cantidad de bytes. (18:56) Suficientes como para guardar... (19:00) La ventana.
+(19:13) Y vamos a liberar esos píxeles. (19:21) Una vez que tenemos eso... (19:34) Vamos a... (19:42) Vamos a pasar a... (19:43) A mover estos píxeles. (19:45) Primero vamos a escribir unas funciones... (19:49) Que dibujen nuestros píxeles.
+(19:52) Vamos a hacer una función que se llama setpixel. (19:57) Vamos a necesitar el tamaño de... (20:05) El array de píxeles. (20:13) Y el tamaño de... (20:15) Donde vamos a dibujar.
+(20:21) Entonces voy a llamar... (20:24) Setpixel. (20:26) A ser nuestro setpixel. (20:39) Y el color.
+(20:46) Y lo que va a hacer esto es... (20:48) La coordenada. (20:57) Hacerlo enterpixels. (21:00) La posición.
+(21:06) Y el color. (21:13) Entonces esto va a ser... (21:19) Posición.x (21:22) Y el color. (21:24) Esto se lo va a hacer... (21:26) Se lo va a hacer si está en rama.
+(21:50) Esto sería... (21:52) Posición.x (21:56) Esto sería igual a 0. (22:03) Posición.x (22:05) Posición.x (22:08) Menor que 4x. (22:13) Menor que x. (22:21) Y esto es una anoraje. (22:24) Y entonces vamos a hacer unas funciones que hagan setpixel.
+(22:29) Y van a tener que tomar... (22:31) En lugar del vicecontext. (22:34) Nuestros píxeles. (22:37) Nuestro espacio de memoria.
+(22:42) Y aquí va a llamar a la señal. (22:57) Y este color... (23:00) No va a hacer falta. (23:08) Sí va a hacer falta.
+(23:14) Posición.x más x. (23:17) Esto va a ser una... (23:19) Una estructura. (23:22) Esto también. (23:24) Este color se va a sacar en nuestro formato.
+(23:28) Cuando vemos toda esa conversión a otro lado. (23:32) Y ni siquiera lo hacemos nosotros estos. (23:36) Entonces ahora que tenemos este... (23:42) Lo que vamos a hacer es dibujar... (23:44) Esto mismo.
+(23:46) Con nuestras nuevas funciones. (23:58) A ver si no me tira de memoria inválida o algo así. (24:02) No, parece que no.
+(24:05) Bueno entonces ahora necesitamos hacer una función horrible. (24:09) Que se llamara... (24:13) Bitbuffer. (24:15) Que lo que va a hacer es... (24:21) Copiar nuestro buffer.
+(24:24) De píxeles. (24:29) A un hdc. (24:35) El vicecontext de Windows.
+(24:38) Y entonces aquí vamos a crear un bitmap. (24:41) ¿Cómo es esto? (24:45) Bitmapinfo. (24:49) Bitmapinfo.
+(24:52) Igual. (25:01) Un hd. (25:05) A cualquiera.
+(25:11) Vamos a... (25:14) Copiar todos los miembros. (25:16) No, los últimos no. (25:26) ¿Por qué me quito de la estaba? (25:39) Esto va a ser... (25:43) Una apertura.
+(25:48) Sensor. (25:51) Creo que este es el x. (25:54) El x. (25:59) C4. (26:01) Si no me equivoco.
+(26:04) Tamaño. (26:10) Bitmapinfo. (26:13) El tamaño va a ser... (26:17) Bitsize.x.y. (26:21) Un plane.
+(26:23) Limpia bits. (26:26) Bitmapinfo.rgb. (26:30) Es decir, sin compresión. (26:33) Y el tamaño de la imagen... (26:36) Va a ser este.
+(26:42) Por este y por... (26:47) Supongo. (26:50) Entonces ahora vamos a crear un... (26:53) Hdc compatible. (26:59) Que vamos a usar para copiar nuestro... (27:01) Nuestro array de pixels a un bitmap.
+(27:04) Fuera de la pantalla. (27:05) De la ventana. (27:16) Y luego vamos a crear un... (27:19) Bitmap.
+(27:35) Aquí le vamos a pasar nuestro hdc compatible. (27:41) Nuestro bitmapinfo. (27:50) Esto es... (27:56) Px3colors.
+(27:58) Bien. (28:00) Esa no es la imagen entera. (28:06) Aspect.
+(28:07) Bits. (28:22) Ah, por esto ya está. (28:24) Bueno.
+(28:36) Cero. (28:41) Y cero. (28:44) Y ahora necesitamos crear... (28:52) PixelLimits.
+(28:54) Y vamos a asignar... (28:56) Los pixels finalmente. (29:03) Px3colors. (29:04) Cero.
+(29:07) Px3colors.y. (29:12) Y cero. (29:14) Cero. (29:15) Bueno.
+(29:17) Pixels. (29:19) En bitmapinfo. (29:29) Y luego vamos a pasar a... (29:37) Pasamos a un lugar donde guardamos nuestro hijo bitmap.
+(29:51) En el section. (29:58) Esta parte de abajo.

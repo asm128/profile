@@ -1,0 +1,636 @@
+0:03
+hoy les voy a mostrar
+0:05
+cómo hacer una ventana nativa de windows
+0:08
+lo cual les va a servir para
+0:10
+poder hacerlo luego otro sistema
+0:13
+operativo no hay
+0:15
+o inclusive consola
+0:23
+y varias cosas más como
+0:26
+m
+0:28
+vamos a crear un nuevo proyecto con el
+0:30
+mismo estudio
+0:33
+vamos a elegir más vinos y él asistentes
+0:38
+para escrito
+0:41
+y vamos a elegir una carpeta donde vamos
+0:43
+a poner de nuestros proyectos
+0:48
+una carpeta
+0:51
+y
+0:53
+es que elegimos las letras el nombre
+0:55
+perfecto casera diagonal
+0:57
+y no vamos a hacer una ventana
+1:03
+elegimos resultó vacío la aplicación de
+1:06
+consola
+1:08
+y se abre el estudio
+1:12
+clickea más
+1:15
+en nuestro proyecto de agregados
+1:18
+miren
+1:20
+y
+1:21
+elegimos un nombre
+1:25
+y pasamos a probar que compiten por
+1:29
+ejemplo
+1:36
+y
+1:37
+[Música]
+1:39
+pero
+2:00
+y aquí se imprime nuestro texto
+2:05
+p
+2:08
+vamos a pasar entonces incluido heart
+2:12
+que contiene
+2:15
+de windows
+2:24
+y
+2:26
+y entonces estamos a permitir de césar a
+2:31
+al función
+2:35
+la cual vamos a usar crear la ventana
+2:39
+pero esta función aquí de varias
+2:42
+cuestiones como parámetros para saber
+2:45
+cómo operar
+2:47
+esta función
+2:48
+[Música]
+2:50
+de la ventana
+2:56
+ok que nosotros vamos a usar para
+2:59
+interactuar con la ventana
+3:02
+por ejemplo vamos a tener que
+3:05
+llamar a una función que se llama en su
+3:07
+williams
+3:10
+que es necesario llamar porque
+3:16
+porque la ventana se crea oculta
+3:32
+en la ventana
+3:39
+aquí llegan otros parámetros posibles
+3:44
+por ejemplo para crearla
+3:46
+al principio
+3:51
+y con f1 pueden seleccionar en cada una
+3:54
+de estas funciones pueden ver de
+3:55
+documentación
+4:00
+en el mediano
+4:03
+y este se les encargó por si quieren
+4:05
+verlo en detalle de lo que vamos a hacer
+4:08
+[Música]
+4:09
+pero lo necesario para poder
+4:14
+entonces algo que hace falta antes de
+4:16
+crear de ventana
+4:18
+es registrar en el windows una clase de
+4:21
+ventana
+4:24
+para lo cual existe esta estructura que
+4:26
+nos permite describir esa clase
+4:31
+de una relación con las clases de
+4:33
+lenguajes de programación
+4:37
+entonces vamos a
+4:41
+tomar la estructura los miembros que son
+4:48
+buscándole al modo del proceso actual
+4:51
+que se lo pide de windows de la ventana
+4:54
+se puede obtener sólo en esta función
+5:00
+para metro
+5:03
+y ya no
+5:05
+hace falta mucho más que se le clic en
+5:08
+un nombre a la clase de referencia
+5:13
+durante la llamada
+5:25
+y luego como tercer parámetro vamos a
+5:27
+necesitar un cohiba
+5:34
+aquí arriba
+5:36
+esta es una función
+5:41
+que va a recibir
+5:44
+los eventos que reporte la ventana la
+5:47
+ventana el windows cada vez que te creó
+5:50
+una interacción nuestra ventana
+5:53
+va a postear un evento en la cola de
+5:56
+dentro
+5:57
+de la ventana y entonces nosotros vamos
+6:00
+a poder
+6:02
+y ejecutar esta función por cada uno de
+6:04
+los eventos
+6:08
+y decidir qué hacer por ejemplo 69 para
+6:11
+recibir un evento
+6:17
+esto recibe un código de venta
+6:23
+y aquí
+6:25
+por ejemplo el elemento más
+6:31
+esto es mi similar
+6:35
+a tomar
+6:38
+el navegador reporta a través de los
+6:42
+atributos html con manzana o un clic
+6:48
+con software etcétera
+6:51
+si aprietan contra elvira acá pueden ver
+6:53
+una lista de eventos posibles
+6:56
+y tienen de todos los colores
+6:59
+para diferentes cosas como por ejemplo
+7:01
+si se redimensiona lema desde tan así se
+7:03
+minimiza o lo que fuere para todo eso
+7:05
+nosotros vamos a querer ajustar la
+7:07
+funcionaria de nuestro programa para qué
+7:11
+muestre las cosas acordes al estado
+7:14
+actual y montón
+7:16
+detrás policiales por ejemplo
+7:22
+dalia ministro
+7:30
+y vamos a usarlo para postear nosotros
+7:33
+también el mensaje
+7:36
+de la ventana
+7:41
+d
+7:52
+y entonces ahora que tenemos esta
+7:56
+escuela que asignadas ya podemos
+7:59
+registrar la clase
+8:03
+enviándole nuestra instancia de la
+8:05
+estructura
+8:11
+y entonces
+8:14
+aquí cuando hacemos el credit window
+8:16
+decirle que queremos una clase
+8:19
+quedarte en hambre
+8:22
+crear una ventana de ese tipo
+8:25
+ah
+8:35
+y los otros parámetros
+8:37
+[Música]
+8:39
+qué forma de santana qué tipo de ventana
+8:42
+hacer
+8:44
+no
+8:47
+si contiene los botones menú etcétera
+8:52
+aquí se hacen contra el grifo
+8:55
+que ver la turbina que está conformada
+8:57
+por captions 6 - por ejemplo este menú
+9:03
+the frames que tiene bordes
+9:04
+redimensionadas mínimas y máximas box
+9:08
+deduzcan usted es que puede llegar hasta
+9:12
+y entonces cuál es
+9:18
+y luego un tamaño
+9:25
+para las cosas que nos interesan y aquí
+9:29
+necesitamos pasarle otra vez
+9:31
+el pendiente del proceso
+9:36
+porque nos la ponemos otros
+9:44
+entonces ahora lo que pasamos a
+9:50
+hacer una vez que se crea de la ventana
+9:54
+vamos a ejecutar
+9:56
+nuestro look principal
+10:06
+[Música]
+10:09
+para luego saludar cuando queremos
+10:13
+finalizar la ejecución
+10:17
+y vamos a tomar
+10:22
+lo que tenemos que hacer en este
+10:24
+principal es
+10:26
+entre otras cosas
+10:30
+actualizar procesar los eventos que
+10:33
+tenemos en la escuela de evento del año
+10:36
+porque si no la ventana se traba y no
+10:38
+hace nada más
+10:44
+entonces vamos a llamar a una función
+10:47
+que nos permite saber si hay un evento
+10:52
+y esperando para ser procesado vamos a
+10:56
+guardar informaciones evento
+11:04
+vamos a pasar de la función que tiene
+11:07
+con las latas
+11:10
+y aquí vamos a pasar
+11:18
+para indicar que si hay dicho evento
+11:21
+queremos que se elimine de la cola
+11:23
+y entonces ahora la función
+11:30
+que sirven para procesar ese evento de
+11:32
+las cuales la segunda
+11:33
+para llamar a nuestros demás arruina
+11:41
+y aquí
+11:43
+el código de mensaje del evento
+11:50
+que es el que enviamos nosotros con la
+11:53
+próximas
+11:56
+el evento destroy
+11:59
+si tenemos nuestro
+12:04
+y entonces ha finalizado
+12:08
+no ha finalizado en lo principal y la
+12:11
+aplicación sale
+12:14
+entonces algo que nos falta para que
+12:16
+esto funcione del todo es
+12:19
+corregir este problema
+12:20
+que dice que esta variable de un tipo y
+12:25
+nuestro nuestro paul buck no corresponde
+12:28
+a esa firma
+12:30
+del tipo entonces vamos a tomar
+12:35
+los parámetros que toma esa función
+12:38
+según
+12:40
+[Música]
+12:43
+y aquí vamos a donar el código mensaje
+12:48
+se alejan de la antena
+12:52
+no
+12:54
+y estos van a ser datos extra de del
+12:57
+evento por ejemplo en una misión vamos a
+13:00
+recibir
+13:02
+las coordenadas del mouse
+13:06
+cuando el evento más
+13:11
+para levantar los datos y las
+13:13
+coordenadas aquí sí
+13:16
+de este tipo vamos a ver
+13:20
+aquí
+13:25
+y mire
+13:29
+entonces aquí vamos a declarar unas
+13:30
+variables
+13:36
+para guardar las posiciones más
+13:42
+[Música]
+13:44
+y de esa manera nosotros avanzar
+13:47
+en donde vamos a poder
+13:52
+interactuar con nuestro programa con el
+13:55
+mouse hacer clic en alguna y saber dónde
+13:59
+aquí
+14:05
+[Música]
+14:07
+funciona
+14:44
+[Música]
+14:46
+y
+14:56
+yo
+14:59
+seguiría en la consola cada vez que
+15:01
+sobre
+15:03
+la ventana
+15:04
+entonces ahora
+15:07
+ejecutar realmente en gana
+15:11
+castro
+15:13
+[Música]
+15:17
+entonces el problema y demás problemas
+15:20
+vamos a convertir esto porque aquí ese
+15:24
+no es el que era
+15:28
+la firma no está completa
+15:32
+y si ahora si me dejan ya la otra cosa
+15:35
+que me falta
+15:37
+expresar todo lo demás de ventas que no
+15:39
+esté procesando y eso es necesario
+15:40
+volver unos
+15:43
+maneja la ventana a través de los
+15:45
+eventos de la ventana y si nosotros por
+15:47
+ejemplo configuramos una obligación una
+15:48
+ventana que sea con bordes
+15:50
+redimensionables en el momento que
+15:52
+nosotros clique nos sobre el borde que
+15:54
+trabajan de redimensionar algunos
+15:56
+costearnos sus eventos de
+15:58
+redimensionamiento de ventana
+16:02
+en él
+16:07
+no puedes meterte
+16:09
+y
+16:12
+e
+16:14
+y entonces para que el windows maneje
+16:19
+estos eventos con su función el día por
+16:22
+defecto y simplemente redimensión en la
+16:24
+ventana vamos a tener que redireccionar
+16:26
+de los eventos a limpio window brasil
+16:29
+que se va encargar de
+16:32
+hacer lo que sea necesario
+16:36
+en casa que nosotros nada se ha hecho
+16:38
+nada
+16:40
+o simplemente ignorar los sesentas
+16:44
+entonces dirección a dos parámetros si
+16:47
+usas
+16:51
+y él
+16:56
+y entonces ahora si ejecutamos
+17:06
+[Música]
+17:07
+nada
+17:09
+y aquí está el resultado
+17:12
+[Música]
+17:14
+como pueden ver esto llegará más semanas
+17:16
+al tamaño que le pedimos de 640 x 480
+17:21
+con un área cliente que me parece un
+17:23
+poco más chica 6 15
+17:26
+o sea que los bordes tienen sus su
+17:29
+tamaño
+17:31
+el espacio arriba tiene el sistema
+17:32
+etcétera
+17:34
+así que bueno eso es todo
+17:37
+de aquí y lo más importante es entender
+17:39
+que se crea la ventana y luego se
+17:43
+ejecuta en lo principal en el cual se
+17:46
+procesan los eventos es la ventana y
+17:49
+luego aquí más abajo vamos a agregar
+17:53
+lo que haga nuestro programa
+17:57
+o sea que
+18:00
+no tienen que preocuparse mucho por lo
+18:02
+que son como él resalta
+18:06
+estás acá
+18:09
+porque no son tan relevantes de lo que
+18:11
+vamos a hacer sobre lo que vamos a hacer
+18:12
+es
+18:14
+trabajar código
+18:16
+multiplataforma
+18:18
+que no interactúa de tanto con las vías
+18:20
+de windows a menos que sean necesarias y
+18:22
+con ninguna vez el sistema operativo
+18:24
+esté bien al mecanismo de colocación de
+18:27
+eventos de la ventana lo van a poder
+18:28
+encontrar en
+18:31
+en linux weylandt o en android
+18:37
+cualquier operativo del sistema
+18:38
+operativo que se precie va a tener mucho
+18:40
+más
+18:44
+este concepto de los mensajes es clave
+18:46
+dentro del desarrollo open a pesar de
+18:50
+que aquí en un asustado en una clase en
+18:51
+ningún miembro privado una por el estilo
+18:57
+así que bueno espero que les funcione a
+19:00
+gusto así la próxima pueden sacar algo
+19:02
+más interesante
+19:03
+que impriman en la posición del mouse y
+19:07
+el que la ventana sea éste
+19:09
+espero que les haya gustado

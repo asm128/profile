@@ -1,137 +1,17 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pablo Ariel Zorrilla Cepeda - Resume</title>
-  <style>
-    body {
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      line-height: 1.6;
-      max-width: 850px;
-      margin: 40px auto;
-      padding: 0 20px;
-      color: #333;
-    }
-    h1 {
-      text-align: center;
-      font-size: 2.2em;
-      border-bottom: 2px solid #333;
-      padding-bottom: 0.3em;
-    }
-    h2 {
-      color: #444;
-      margin-top: 1.6em;
-    }
-    h3 {
-      color: #222;
-      margin-top: 1.2em;
-    }
-    .role {
-      font-style: italic;
-      color: #666;
-    }
-    ul {
-      padding-left: 20px;
-    }
-  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pablo Zorrilla — Systems Consulting</title>
+  <meta name="description" content="Independent C++ architecture, firmware and systems consulting by Pablo Zorrilla.">
+  <link rel="stylesheet" href="./profile.css">
+  <script defer src="./dom.js"></script>
+  <script defer src="./profile.js"></script>
 </head>
 <body>
-
-  <h1>Pablo Ariel Zorrilla Cepeda</h1>
-  <h2>Contact information</h2>
-  <a href="mailto:pabloaz@gmail.com">pabloaz@gmail.com</a>
-
-  <h2>Summary</h2>
-  <p>
-    Experienced software engineer with over two decades of hands-on development across embedded,
-    desktop, and real-time systems. Proven track record in graphics, games, logistics, and full-stack
-    development. Strong problem-solver with deep knowledge of C++, Python, OpenGL, DirectX, and
-    embedded platforms. Fluent in English.
-  </p>
-
-  <h2>Experience</h2>
-  <h3>Space AI, Inc (Freelance IoT, Jul 2023 – Dec 2025)</h3>
-  <p class="role">IoT Solutions Architect</p>
-  <ul>
-    <li>Designed and implemented the core communications architecture of the Open Space Network, a distributed cloud system based on IoT devices.</li>
-    <a href="https://www.openspacenetwork.org">https://www.openspacenetwork.org</a>
-    <li>Designed and implemented C++ firmware for the NodeIO device featuring satellite communications using the Iridium and SWARM satellite networks, CCSDS-compliant network protocols, and a device configuration frontend implemented with HTML, WebGL and JavaScript.</li>
-    <li>Designed and implemented architecture and communcations for telemetry and remote control.</li>
-    <li>Implemented drivers for Software Defined Radio chips (lms7002m and lms6002d from Lime Microsystems).</li>
-    <li>Designed and implemented remote firmware update backend, remote configuration system and telemetry web services in Python with FastAPI.</li>
-    <a href="https://www.spaceai.com/nio">https://www.spaceai.com/nio</a>
-  </ul>
-
-  <h3>Voxabular (2022 - 2023)</h3>
-  <p class="role">Lead Developer</p>
-  <ul>
-    <li>Created a 3D web-based educational game using TypeScript, Three.js, and Python.</li>
-    <li>Handled gameplay logic, 3D graphics pipeline, and language analysis via a leading NLP framework running under Miniconda3.</li>
-    <li>Implemented systems to detect and correct language errors and generate English responses based on gameplay context.</li>
-  </ul>
-
-  <h3>Softland (2017 – 2019)</h3>
-  <p class="role">Software Architect</p>
-  <ul>
-    <li>Participated in the architectural design of an ERP platform, focusing on scalability, modularity, and maintainability.</li>
-    <li>Worked across teams to integrate legacy systems with modern stacks and standards.</li>
-  </ul>
-
-  <h3>Drixit (2020 – 2021)</h3>
-  <p class="role">Firmware Developer</p>
-  <ul>
-    <li>Developed C++ firmware for STM32 and ESP32 microcontrollers used to detect situations and provide alerts for preventing work accidents.</li>
-    <li>Developed image recognition software with Python and OpenCV used to report about gearing and clothing required by the workers to comply with safety norms.</li>
-  </ul>
-
-  <h3>Globant (2015 – 2016)</h3>
-  <p class="role">Software Engineer (assigned to DreamWorks Animation)</p>
-  <ul>
-    <li>Contributed to Premo, the primary animation tool of the company, developed in C++ and providing an in-app Python console which enables artists to automate animation and rigging processes.</li>
-    <li>The tasks involved included from bug fixing to implementing new features or exposing them to the python layers.</li>
-  </ul>
-
-  <h3>LeanderGames (2013 – 2014)</h3>
-  <p class="role">Game Developer</p>
-  <ul>
-    <li>Implemented online casino gameplay and other backend system logic, including integration of virtual wallets and systems of partner companies such as Amaya and PokerStars.</li>
-    <li>Ensured regulatory compliance and cross-platform deployment stability.</li>
-  </ul>
-
-  <h3>Gameloft Argentina (2011 – 2012)</h3>
-  <p class="role">Lead Engineer</p>
-  <ul>
-    <li>Lead the port of <a href="https://www.youtube.com/watch?v=UR4T5S1keYA">Near Orbit Vanguard Alliance 3</a> from the iOS/OpenGL implementation, for the launch of the upcoming Windows Phone 8 with DirectX 11.1 support. Used C++ for the game implementation and Python/PIL for the asset processing pipelines that generated files suitable for the reduced storage space provided by the phones.</li>
-    <li>Ported Six Guns updates from iOS to Android platforms.</li>
-  </ul>
-
-  <h3>Softogo (2003 – 2005)</h3>
-  <p class="role">Staff Developer</p>
-  <ul>
-    <li>Developed a full-stack logistics framework for Nestlé de France.</li>
-    <li>Built offline-first PocketPC apps with local database sync via WiFi and server integration.</li>
-  </ul>
-
-  <h3>Freelance & Independent Projects (2006 – Present)</h3>
-  <p class="role">Embedded & Full-Stack Developer</p>
-  <ul>
-    <li>Developed multiple embedded systems using ESP32, LoRa, and sensor networks.</li>
-    <li>Designed and built modular hardware interfaces, including 3D-printed casing systems for development boards.</li>
-    <li>Created real-time backend infrastructures using FastAPI, MQTT, and low-level communication protocols.</li>
-    <li>Designed and developed intrusion detection Python software that can be run using generic webcams using OpenCV for both recording camera input and storing into convenient formats, as well as for detecting people and send processed images and videos to the user through a Telegram bot.</li>
-    <li><a href="https://www.youtube.com/@solarsiegeonline" >Youtube Channel with development snapshot videos</a></li>
-    <li><a href="https://www.youtube.com/user/goldsciences/videos" >Old Youtube Channel with development snapshot videos</a></li>
-  </ul>
-
-  <h2>Early Technical Background</h2>
-
-  <h3>Self-taught Programmer (1992 – 2002)</h3>
-  <ul>
-    <li>Started programming in BASIC at age 11.</li>
-    <li>Configured DOS boot sequences via <code>config.sys</code> and <code>autoexec.bat</code> to load custom memory modes, CD-ROM drivers, and VESA graphics settings for different games.</li>
-    <li>Used memory editors to locate and alter runtime game variables (e.g., lives, score), demonstrating early reverse-engineering instincts.</li>
-  </ul>
-
+  <header id="site-header"></header>
+  <main id="site-main"></main>
+  <footer id="site-footer"></footer>
 </body>
 </html>
