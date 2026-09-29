@@ -343,6 +343,23 @@ const articleJSON = `{
       ]
     },
     {
+      "title": "What the site now demonstrates",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "The finished profile is a small demonstration of the architecture described throughout these studies. The homepage, this case study, the CV, the shared article renderer, the shared DOM helpers and the JSON content work together without a framework."
+        },
+        {
+          "type": "paragraph",
+          "text": "A single correction in the shared link helper changed Markdown behavior across every page that uses it. The CV then reused the same rendering path while adding only the structure it actually needed. Content remains separate from presentation, repeated behavior is shared, and new material has a bounded edit cost."
+        },
+        {
+          "type": "paragraph",
+          "text": "The site therefore demonstrates its own argument: reusable mechanisms are more valuable than repeatedly authored results. Its structure is simple enough to inspect, and its next change can be made by extending data before extending code."
+        }
+      ]
+    },
+    {
       "title": "Local source references",
       "blocks": [
         {
