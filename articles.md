@@ -19,6 +19,7 @@
 
 ## Development evidence
 
+- [Manual allocation and ownership audit](./evidence/manual-allocation-audit.md)
 - [RGB / Computación Gráfica commit evidence](./evidence/rgb-commit-analysis.md)
 - [RGB final code: snapshot review](./evidence/rgb-final-code-review.md)
 - [Graphics 101: extracted notes from a noisy transcript](./evidence/T03-graphics-101-02-extracted-notes.md)

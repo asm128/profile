@@ -65,6 +65,7 @@ const profileJSON = `{
       {
         "title": "Development evidence",
         "articles": {
+          "Manual allocation and ownership audit": "./evidence/manual-allocation-audit.md",
           "RGB commit evidence": "./evidence/rgb-commit-analysis.md",
           "RGB final code review": "./evidence/rgb-final-code-review.md",
           "Graphics 101 transcript notes": "./evidence/T03-graphics-101-02-extracted-notes.md",

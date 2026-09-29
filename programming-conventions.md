@@ -529,6 +529,8 @@ if_fail_fw(packet.slice(payload, headerSize, payloadSize));
 
 The view refers to existing storage; that storage must remain alive while the view is used. The contrasting owning copy has independent storage and lifetime. Prefer the view when shared access is intended; copying is appropriate when independence is required.
 
+The [manual allocation and ownership audit](./evidence/manual-allocation-audit.md) provides repository-level evidence for the broader ownership pattern. Across the reviewed first-party sources, GPK Games contains no direct `malloc()`, `free()`, heap `new` or `delete`; GPK concentrates its direct operations in storage and module infrastructure; and NIO Firmware confines its two direct allocations to the firmware updater. The consequence is fewer application-level locations in which allocation failure, mismatched release, double release or unclear ownership can be introduced.
+
 ## 20. Make representation choices explicit
 
 Use fixed-width integers, explicit enum storage, bit fields, or packing where representation matters. These expose storage and layout decisions to someone reading the declaration.

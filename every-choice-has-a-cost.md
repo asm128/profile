@@ -52,6 +52,14 @@ The revised page keeps the article groups in JSON and uses shared rendering code
 
 The case also shows a cost that source metrics miss: the user's time spent identifying unnecessary work and steering its replacement. A completed page that required repeated correction cost more than its final files alone reveal.
 
+## Concentrated ownership removes repeated risk
+
+The [manual allocation and ownership audit](./evidence/manual-allocation-audit.md) supplies a larger C++ and firmware example. It reviewed 759 source files across GPK, GPK Games, GPK Samples and NIO Firmware. The first-party GPK Games code contains no direct `malloc()`, `free()`, heap `new` or `delete`. The few operations in GPK are concentrated in container, reference and module infrastructure; the two NIO Firmware allocations are confined to the updater.
+
+This does not prove the absence of every lifetime defect. It measures the number of places where application code can directly introduce several of them. A game function without manual ownership cannot forget its matching release, select the wrong deallocator or leave a partially cleaned error path for that allocation. A change to the central storage policy also reaches its consumers without editing each game or firmware feature.
+
+The economic effect appears in several budgets at once: fewer ownership sites to implement and review, fewer error paths to test, less investigation when ownership fails, and fewer consumers to modify when storage requirements change. The useful target is not zero dynamic allocation; it is zero scattered ownership policy.
+
 ## Compare consequences, not labels
 
 “Clean,” “modern,” “professional,” and “standard” are descriptions, not measurements. A framework can be the cheapest route when its facilities satisfy real requirements. A small local mechanism can be cheaper when the work is narrow and must integrate with existing code. The useful comparison is between concrete alternatives under the same requirements.
