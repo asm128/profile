@@ -34,7 +34,11 @@ const profileJSON = `{
       "20+ years": "Software development",
       "693 commits": "Reviewed firmware history",
       "8,986 lines": "Final firmware ecosystem reviewed",
-      "3 weekends": "CED graphics development"
+      "3 weekends": "CED graphics development",
+      "Measuring…": "This visit: navigation through profile rendering",
+      "Measuring render…": "This visit: profile DOM construction",
+      "11.1 KiB": "Uncompressed homepage source",
+      "99.6% smaller": "Than the 2025 median desktop home page"
     }
   },
   "studies": {
@@ -66,6 +70,7 @@ const profileJSON = `{
         "title": "Development evidence",
         "articles": {
           "Manual allocation and ownership audit": "./evidence/manual-allocation-audit.md",
+          "Homepage loading and rendering measurements": "./evidence/homepage-performance.md",
           "RGB commit evidence": "./evidence/rgb-commit-analysis.md",
           "RGB final code review": "./evidence/rgb-final-code-review.md",
           "Graphics 101 transcript notes": "./evidence/T03-graphics-101-02-extracted-notes.md",
@@ -87,6 +92,7 @@ const appendSectionHeading = (section, data) => {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
+  const renderStarted = performance.now();
   const header = document.getElementById("site-header");
   header.append(link(profile.name, "./index.html", "name"));
   const navigation = element("nav");
@@ -121,9 +127,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const evidence = element("section");
   appendSectionHeading(evidence, profile.evidence);
   const metrics = element("div", "metrics");
+  const metricValues = {};
   for(const [value, description] of Object.entries(profile.evidence.metrics)) {
     const metric = element("div", "metric");
-    metric.append(element("strong", "", value));
+    const metricValue = element("strong", "", value);
+    metricValues[description] = metricValue;
+    metric.append(metricValue);
     metric.append(element("span", "", description));
     metrics.append(metric);
   }
@@ -154,4 +163,8 @@ document.addEventListener("DOMContentLoaded", () => {
   footer.append(link(profile.email, "mailto:" + profile.email));
   footer.append(" · ");
   footer.append(link("Curriculum vitae", "./cv.html"));
+
+  const renderFinished = performance.now();
+  metricValues["This visit: navigation through profile rendering"].textContent = `${renderFinished.toFixed(1)} ms`;
+  metricValues["This visit: profile DOM construction"].textContent = `${(renderFinished - renderStarted).toFixed(1)} ms`;
 });

@@ -52,6 +52,8 @@ The revised page keeps the article groups in JSON and uses shared rendering code
 
 The case also shows a cost that source metrics miss: the user's time spent identifying unnecessary work and steering its replacement. A completed page that required repeated correction cost more than its final files alone reveal.
 
+The [homepage loading and rendering measurements](./evidence/homepage-performance.md) record a direct operational consequence of the finished design. Its four uncompressed first-party resources total 11.1 KiB, approximately 99.6% less payload than the 2025 HTTP Archive median desktop home page. The homepage also reports navigation-through-rendering and DOM-construction time from each visitor's own browser, keeping the variable runtime result separate from the stable source-size measurement.
+
 ## Concentrated ownership removes repeated risk
 
 The [manual allocation and ownership audit](./evidence/manual-allocation-audit.md) supplies a larger C++ and firmware example. It reviewed 759 source files across GPK, GPK Games, GPK Samples and NIO Firmware. The first-party GPK Games code contains no direct `malloc()`, `free()`, heap `new` or `delete`. The few operations in GPK are concentrated in container, reference and module infrastructure; the two NIO Firmware allocations are confined to the updater.
