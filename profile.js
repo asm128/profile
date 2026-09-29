@@ -46,7 +46,8 @@ const profileJSON = `{
         "title": "Programming practice",
         "articles": {
           "Programming conventions and their reasoning": "./programming-conventions.md",
-          "The cost of unnecessary engineering: a homepage case study": "./homepage-case-study.html"
+          "The cost of unnecessary engineering: a homepage case study": "./homepage-case-study.html",
+          "Every engineering choice spends or saves a budget": "./every-choice-has-a-cost.md"
         }
       },
       {
