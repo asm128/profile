@@ -145,6 +145,24 @@ The same arrangement improves debugging. Executables, debug symbols and any requ
 
 The directory is also inspectable by a person. Looking at `x64.Debug` immediately answers which applications and libraries the bundle produced. Looking at `obj/x64.Debug` identifies which projects participated. No knowledge of each project's default output conventions is required.
 
+## The output directory is a snapshot boundary
+
+Because the shared stage contains more than executables, it can be archived as the complete result of a build. Zipping `x64.Debug` or `x64.Release` preserves the mutually compatible set of libraries, runtime DLLs, PDB files, compiled shaders, configuration files and generated application data that existed together when the application was exercised.
+
+The current `asm128/x64.Release` directory illustrates the range. In addition to four static libraries, it contains seven PDB files, a runtime DLL, 22 compiled `.cso` shaders, JSON configuration, and generated Galaxy Hell data. These are not artifacts collected afterward from unrelated project trees. They were produced or deployed into the same directory by the build.
+
+That makes a zip useful in several roles at once:
+
+- a runnable or nearly runnable distribution for another machine;
+- a CI artifact containing the whole selected configuration;
+- a diagnostic snapshot with the exact symbols corresponding to its binaries;
+- a historical record of the shaders and runtime data used by that build;
+- a baseline that can be compared with a later build without reconstructing project paths.
+
+The matching bundle commit identifies the source composition, while the configuration archive preserves the binary composition. Keeping both gives a compact handoff for reproduction and post-build debugging. PDBs may be omitted from a public distribution when their diagnostic information is not intended for release, but retaining them in the internal snapshot avoids having to reproduce the exact build before investigating a fault.
+
+In a conventional scattered layout, creating that archive requires another manifest or collection script describing which files belong to the product. Here the output directory is already that manifest. Archiving it is a filesystem operation, not a second packaging system.
+
 ## The convention crosses build systems
 
 The design is not tied to Visual Studio. The Makefiles for GPK, LLC and the `smart` applications use the same platform-and-configuration stage.
