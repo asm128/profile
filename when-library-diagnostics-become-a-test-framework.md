@@ -21,18 +21,18 @@ The fixed cases are important. Random generation is poor at finding narrow trans
 
 ## Measured size and executed coverage
 
-The following measurements were taken from the working source on 2026-09-30. “Check sites” counts written uses of LLC's check-macro families. It is a source metric, not the number of times those checks execute.
+The following measurements were taken from the working source on 2026-09-30. “Recorded invariant sites” counts written uses of the logical check and requirement macros. It is a source metric, not the number of times those checks execute.
 
-| Source file | Lines | Nonblank lines | Check sites |
+| Source file | Lines | Nonblank lines | Recorded invariant sites |
 | --- | ---: | ---: | ---: |
-| `llc_test_core.cpp` | 19 | 17 | 1 |
+| `llc_test_core.cpp` | 29 | 27 | 0 |
 | `llc_test_noise.cpp` | 43 | 41 | 4 |
-| `llc_test_packed_int.cpp` | 129 | 118 | 14 |
-| `llc_test_view_bit.cpp` | 235 | 221 | 21 |
-| `llc_test_view_serialize.cpp` | 307 | 290 | 32 |
-| **Total** | **733** | **687** | **72** |
+| `llc_test_packed_int.cpp` | 143 | 131 | 11 |
+| `llc_test_view_bit.cpp` | 243 | 228 | 17 |
+| `llc_test_view_serialize.cpp` | 320 | 302 | 30 |
+| **Total** | **778** | **729** | **62** |
 
-The nine-line declaration header is not included in that table. The suites also contain eight compile-time assertions for packed-width and bit-offset field sizes.
+The 50-line shared test header is not included in that table. It defines the generic grouped-error record, its type-erasing recorder, failure counting and the two check forms used by every suite. The suites also contain eight compile-time assertions for packed-width and bit-offset field sizes.
 
 The deterministic-random portion expands to:
 
@@ -82,7 +82,9 @@ A failed check can report:
 - view count, cursor position or bit index;
 - pseudorandom seed and iteration.
 
-The result enums add a stable description of the failed contract. The formatted diagnostic adds the concrete counterexample. The suite return value propagates failure into the unified runner. These are not separate systems: the same error-handling vocabulary used by the library supplies the assertion behavior of the tests.
+The result enums add a stable description of the failed contract. They remain private to their suites. At the failure boundary, a templated recorder converts any enum value into a generic entry containing its numeric value, enum name, value name, description and occurrence count. The formatted diagnostic adds the concrete counterexample immediately, while the final report groups repeated failures by enum type and value.
+
+This separation also preserves LLC's signed-result convention. A suite's `err_t` reports only whether the test machinery itself failed; logical failures populate the shared error array. Ordinary checks record and continue through every safe assertion, generated input, backing width and later suite. A requirement records the failure and abandons only the current case when proceeding could access invalid test data. These are not separate systems: the same error-handling vocabulary used by the library supplies the assertion behavior of the tests.
 
 This reuse matters economically. A thin assertion is only cheap if the resulting failure is cheap to interpret. Here, reducing test syntax does not discard diagnostic context because that context was already centralized in the logging macros.
 
@@ -128,18 +130,16 @@ Those are genuine capabilities, not unnecessary ceremony. The comparison is ther
 | Value multiplication | Ordinary loops and tables | Parameter generators |
 | Random generation | Deterministic `SPRNG` | Built-in or property generators |
 | Reproduction | Logged seed, iteration and value | Logged seed and replay facilities |
-| Failure detail | LLC result enums and logging macros | Assertion decomposition and reporters |
+| Failure detail | Private result enums, detailed logs and grouped summaries | Assertion decomposition and reporters |
 | Automatic shrinking | No | Available in property frameworks such as RapidCheck |
-| Per-case discovery and filtering | Suite/type level only | Usually built in |
+| Per-case discovery and filtering | Not yet implemented | Usually built in |
 | External dependency | None beyond LLC | Framework headers, libraries and build integration |
 
 For packed integers, bit positions and view counts, the missing shrinker has limited immediate value: the failing scalar counterexample is already printed. Shrinking becomes more important when inputs are deeply nested structures or long operation sequences.
 
 ## What remains different from a full framework
 
-The current test core favors concentrated execution and direct diagnostics. That has tradeoffs.
-
-It normally stops at the first meaningful failure in a suite. A framework can register each generated case independently, continue through unrelated failures, filter by case name, execute cases in parallel and export standardized reports. LLC currently reports four suite functions to the runner rather than thousands of independently selectable tests.
+The current test core favors concentrated execution and direct diagnostics. It now collects every safe logical failure and groups repeated result categories without hiding their individual logs. A framework can additionally register each generated case independently, filter by case name, execute cases in parallel and export standardized reports. LLC currently reports four suite functions to the runner rather than thousands of independently selectable tests.
 
 The random seeds are fixed, which makes every normal run reproducible but also means every run explores the same generated set. Optional command-line seed and iteration-count overrides would permit exploratory runs or CI seed rotation while preserving exact replay through the existing log fields.
 

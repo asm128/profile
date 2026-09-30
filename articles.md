@@ -10,6 +10,7 @@
 
 ## Architecture and system evolution
 
+- [How two output paths replace a build infrastructure](./how-two-output-paths-replace-a-build-infrastructure.md)
 - [SpaceAI firmware system analysis](./analysis/spaceai-firmware/README.md)
 - [Evolution of the SpaceAI firmware system](./analysis/spaceai-firmware/system-evolution.md)
 - [Final system inventory](./analysis/spaceai-firmware/final-system-inventory.md)
