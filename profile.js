@@ -11,7 +11,7 @@ const profileJSON = `{
   "hero": {
     "label": "Independent systems consulting",
     "title": "Make complex software cheaper to change.",
-    "introduction": "I help teams improve C and C++ architecture, recover ownership of their data, reduce unnecessary dependencies, and turn repeated work into reusable mechanisms.",
+    "introduction": "I make software simpler to build, maintain, and change.",
     "actions": [
       {"title": "Discuss a system", "url": "mailto:pabloaz@gmail.com?subject=Systems consulting"},
       {"title": "Read my CV", "url": "./cv.html", "secondary": true}
@@ -37,8 +37,8 @@ const profileJSON = `{
       "92 commits": "CED graphics prototype, Jan 8–31 2020",
       "Measuring…": "This visit: navigation to profile DOM construction",
       "Measuring render…": "This visit: profile DOM construction",
-      "71.8 KiB": "Uncompressed homepage source",
-      "97.4% smaller": "Than the 2025 median desktop home page"
+      "Measuring size…": "Uncompressed homepage source",
+      "Comparing size…": "Than the 2025 median desktop home page"
     }
   },
   "studies": {
@@ -50,6 +50,7 @@ const profileJSON = `{
         "title": "Programming practice",
         "articles": {
           "Programming conventions and their reasoning": "./programming-conventions.md",
+          "When library diagnostics become a test framework": "./when-library-diagnostics-become-a-test-framework.md",
           "The cost of unnecessary engineering: a homepage case study": "./homepage-case-study.html",
           "Every engineering choice spends or saves a budget": "./every-choice-has-a-cost.md"
         }
@@ -179,5 +180,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const renderFinished = performance.now();
   metricValues["This visit: navigation to profile DOM construction"].textContent = `${renderFinished.toFixed(1)} ms`;
   metricValues["This visit: profile DOM construction"].textContent = `${(renderFinished - renderStarted).toFixed(1)} ms`;
+  window.addEventListener("load", () => {
+    const navigation = performance.getEntriesByType("navigation")[0];
+    const resources = performance.getEntriesByType("resource");
+    const entries = navigation ? [navigation, ...resources] : [];
+    const sizeMetric = metricValues["Uncompressed homepage source"];
+    const comparisonMetric = metricValues["Than the 2025 median desktop home page"];
+    if(!entries.length || entries.some(entry => !(entry.decodedBodySize > 0))) {
+      sizeMetric.textContent = comparisonMetric.textContent = "Unavailable";
+      return;
+    }
+    // Decoded body sizes include cached resources and exclude HTTP compression.
+    const bytes = entries.reduce((total, entry) => total + entry.decodedBodySize, 0);
+    const difference = (1 - bytes / 2862000) * 100; // 2025 HTTP Archive desktop median, in bytes.
+    sizeMetric.textContent = `${(bytes / 1024).toFixed(1)} KiB`;
+    comparisonMetric.textContent = `${Math.abs(difference).toFixed(1)}% ${difference >= 0 ? "smaller" : "larger"}`;
+  }, {once: true});
   initLogo();
 });

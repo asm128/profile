@@ -5,6 +5,7 @@
 - [The cost of unnecessary engineering: a homepage case study](./homepage-case-study.html)
 - [Every engineering choice spends or saves a budget](./every-choice-has-a-cost.md)
 
+- [When library diagnostics become a test framework](./when-library-diagnostics-become-a-test-framework.md)
 - [Programming conventions and their reasoning](./programming-conventions.md)
 
 ## Architecture and system evolution
