@@ -90,7 +90,7 @@ testType<::llc::u3_t>(); testType<::llc::s3_t>();
 
 Second, small data loops apply the same invariant to boundary tables and generated values. Adding another input normally changes a constant or loop count instead of creating a new test function.
 
-Third, helpers such as `testValue<T>()` and `testViewCount<T>()` own the diagnostics for one complete case. Boundary and randomized callers therefore use the same assertions. Random testing does not create a second, weaker test path.
+Third, helpers such as `testValue<T>()` and `testViewCount<T>()` own the diagnostics for one complete case. They report the values that vary for that case; the typed caller owns stable type context and reports successful completion once for the group. Boundary and randomized callers therefore use the same assertions without passing presentation-only strings through every helper. Random testing does not create a second, weaker test path.
 
 This is the same fundamental idea as type- and value-parameterized testing in established frameworks. The difference is that LLC needs no registration layer to express it. At the outermost level, a tiny suite wrapper adds timing and derives the printable suite name from the function token, preventing the function and its diagnostic label from drifting apart.
 
@@ -107,7 +107,9 @@ A failed check can report:
 - view count, cursor position or bit index;
 - pseudorandom seed and iteration.
 
-The result enums add a stable description of the tested contract. They remain private to their suites. At the check boundary, a templated recorder converts any enum value into a generic entry containing its numeric value, enum name, value name, description, failure count and success count. The formatted diagnostic adds the concrete counterexample immediately, while the final report groups repeated results by enum type and value.
+The result enums add a stable description of the tested contract. They remain private to their suites. Operation identity belongs in those values rather than in a second label argument that can become stale. At the check boundary, a templated recorder converts any enum value into a generic entry containing its numeric value, enum name, value name, description, failure count and success count. The formatted diagnostic adds the concrete counterexample immediately, while the final report groups repeated results by enum type and value.
+
+The formatting boundary also preserves the types used by the tests. Pointer arguments remain typed at the check site; the logging facility's `printf_arg()` adapter performs the representation required by `%p`. This removes casts whose only purpose was formatting while leaving semantic casts visible. The check macros similarly use `__VA_OPT__` for truly optional argument lists, so a check with no additional values does not require a dummy argument or a second macro body.
 
 This separation also preserves LLC's signed-result convention. A suite's `err_t` reports only whether the test machinery itself failed; logical failures populate the shared error array. Ordinary checks record and continue through every safe assertion, generated input, backing width and later suite. A requirement records the failure and abandons only the current case when proceeding could access invalid test data. These are not separate systems: the same error-handling vocabulary used by the library supplies the assertion behavior of the tests.
 

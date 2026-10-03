@@ -29,6 +29,11 @@
 - [24. Put zero first to identify the kind of check immediately](#24-put-zero-first-to-identify-the-kind-of-check-immediately)
 - [25. Comment on reasons and constraints that code cannot express](#25-comment-on-reasons-and-constraints-that-code-cannot-express)
 - [26. Limit exception-handling scopes to the operation they protect](#26-limit-exception-handling-scopes-to-the-operation-they-protect)
+- [27. End conditional compilation at the native-data boundary](#27-end-conditional-compilation-at-the-native-data-boundary)
+- [28. Keep stable diagnostic context at the caller that owns it](#28-keep-stable-diagnostic-context-at-the-caller-that-owns-it)
+- [29. Normalize representations at the boundary that requires them](#29-normalize-representations-at-the-boundary-that-requires-them)
+- [30. Preserve type behavior when replacing macros with constexpr code](#30-preserve-type-behavior-when-replacing-macros-with-constexpr-code)
+- [31. Use macros when preprocessing is part of the operation](#31-use-macros-when-preprocessing-is-part-of-the-operation)
 - [Scope and evolution](#scope-and-evolution)
 - [Case study: separating single-path normalization from batch processing](#case-study-separating-single-path-normalization-from-batch-processing)
 - [Case study: diagnostic context from a failing check](#case-study-diagnostic-context-from-a-failing-check)
@@ -805,6 +810,184 @@ The path operation finishes before output insertion begins. Its temporary variab
 The revision also changes naming, explicit types, and the diagnostic. Those are separate from the scope improvement: moving the output operations alone establishes the narrower exception boundary. In particular, the explicit cast of the root length adds a range assumption, and the length-qualified diagnostic accommodates an input view without requiring a terminating null character.
 
 This example preserves the author's `if_fail_fe` policy: log an error and return failure. As with `if_fail_fw` and `if_fail_te`, the readable `if_fail` prefix identifies the check while the suffix selects the policy.
+
+## 27. End conditional compilation at the native-data boundary
+
+Conditional compilation should answer only how a native fact is obtained, never what that fact means or what the program should do with it.
+
+**Contrasting approach:**
+
+```cpp
+#ifdef LLC_WINDOWS
+while(findNextWindows(nativeEntry)) {
+	// Compose, filter, store, invoke the callback and recurse.
+}
+#elif defined(LLC_LINUX)
+while(findNextLinux(nativeEntry)) {
+	// Compose, filter, store, invoke the callback and recurse again.
+}
+#endif
+```
+
+**Preferred approach:**
+
+```cpp
+SPathEntry entry = {};
+#ifdef LLC_WINDOWS
+if(findNextWindows(nativeEntry)) {
+	entry.Name		= nativeEntry.cFileName;
+	entry.IsFolder	= 0 != (nativeEntry.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
+}
+#elif defined(LLC_LINUX)
+if(findNextLinux(nativeEntry)) {
+	entry.Name		= nativeEntry.d_name;
+	entry.IsFolder	= DT_DIR == nativeEntry.d_type;
+}
+#endif
+
+if_fail_fe(processPathEntry(entry));
+```
+
+The platform APIs determine how the name and directory flag are retrieved. Once those facts have been translated into a project-owned representation, their interpretation is common: ignore special entries, compose the full path, apply filters, invoke callbacks, update output state, decide whether to recurse and propagate failures.
+
+This does not attempt to eliminate unavoidable platform branches. It keeps them at the narrow acquisition boundary so application policy has one implementation. Otherwise only the locally compiled copy normally receives regular exercise, allowing equivalent branches to drift while still appearing structurally similar.
+
+## 28. Keep stable diagnostic context at the caller that owns it
+
+Do not pass a value through a helper merely so the helper can repeat information that is already constant for the complete operation. Report that stable context once at the caller that selected it, while inner helpers report only the changing case data they actually own.
+
+**Contrasting approach:**
+
+```cpp
+template<typename T>
+int32_t testSlice(STestResults & results, const char * typeName) {
+	// Every check receives and repeats typeName.
+	return checkSliceCases<T>(results, typeName);
+}
+
+template<typename T>
+int32_t testType(STestResults & results) {
+	return testSlice<T>(results, getTypeName<T>());
+}
+```
+
+**Preferred approach:**
+
+```cpp
+template<typename T>
+int32_t testSlice(STestResults & results) {
+	// Report only the slice values that vary from check to check.
+	return checkSliceCases<T>(results);
+}
+
+template<typename T>
+int32_t testType(STestResults & results) {
+	if_fail_fe(testSlice<T>(results));
+	always_printf("%s slice checks completed.", getTypeName<T>());
+	return 0;
+}
+```
+
+The improvement is not simply a shorter parameter list. Ownership becomes visible. The typed caller owns the type; the case helper owns offsets, counts, expected values and other per-case evidence. If an operation already has an enum value with a registered name and description, that metadata should identify the operation instead of a second string parameter that can drift out of sync.
+
+This rule complements contextual diagnostics rather than reducing them. Failure reports should still contain enough varying data to reconstruct the counterexample. Stable context belongs at the nearest boundary that actually chose it, where one report can describe the complete group without making every helper depend on presentation concerns.
+
+## 29. Normalize representations at the boundary that requires them
+
+When an external interface requires a narrower or different representation, adapt values once at that interface. Do not spread formatting casts or protocol conversions across every caller.
+
+**Contrasting approach:**
+
+```cpp
+error_printf("range: %p to %p", (const void *)view.begin(), (const void *)view.end());
+error_printf("cursor: %p",       (const void *)cursor);
+```
+
+**Preferred approach:**
+
+```cpp
+template<typename T>
+constexpr auto formatArgument(T * value) noexcept {
+	return static_cast<const void *>(value);
+}
+
+template<typename... TArgs>
+int32_t writeFormatted(const char * format, TArgs... args) {
+	return writeToLog(format, formatArgument(args)...);
+}
+
+error_printf("range: %p to %p", view.begin(), view.end());
+error_printf("cursor: %p",       cursor);
+```
+
+The call sites preserve their real types and remain focused on the information being reported. The formatting boundary owns the requirements of `%p`. The same principle applies to string views, byte views, native handles and serialized values: retain the richer project representation until the narrower consumer actually requires conversion.
+
+This does not forbid semantic casts. Reinterpreting storage, selecting a binary representation or deliberately narrowing a value changes the meaning of an operation and should remain visible where that decision is made. A cast required only to satisfy a formatting convention is different: it belongs to the formatter.
+
+## 30. Preserve type behavior when replacing macros with constexpr code
+
+A compile-time function can reproduce a macro's numeric result while changing the expression's type. Treat that type as part of the existing contract until callers and overload resolution prove otherwise.
+
+**Contrasting approach:**
+
+```cpp
+template<size_t Size>
+constexpr auto compactSize() noexcept {
+	if constexpr(Size > 0xFFFFU)
+		return uint32_t(Size);
+	else if constexpr(Size > 0xFFU)
+		return uint16_t(Size);
+	else
+		return uint8_t(Size);
+}
+
+static_assert(compactSize<32>() == OLD_COMPACT_SIZE(32));
+```
+
+The value assertion passes, but the replacement may still select different overloads. A conditional expression in the macro can be promoted to one common type, whereas separate `if constexpr` returns preserve different branch types.
+
+**Preferred verification:**
+
+```cpp
+static_assert(compactSize<32>() == OLD_COMPACT_SIZE(32));
+static_assert(std::is_same_v
+	< decltype(compactSize<32>())
+	, decltype(OLD_COMPACT_SIZE(32))
+	>);
+```
+
+The desired contract may ultimately be a fixed type or a size-dependent type. Decide that deliberately. Strict templates that require homogeneous arguments are useful witnesses here: a newly ambiguous call can reveal that the refactor changed more than syntax even when every computed number is identical.
+
+## 31. Use macros when preprocessing is part of the operation
+
+Prefer functions for ordinary behavior, but retain a macro when the operation requires information or syntax available only at the call site during preprocessing.
+
+Appropriate examples include:
+
+- stringifying a function token so its diagnostic name cannot become stale;
+- applying a platform macro that must receive the original string literal;
+- using `__VA_OPT__` to insert a comma only when optional arguments exist;
+- capturing source file, line or expression text for diagnostics.
+
+**Contrasting approach:**
+
+```cpp
+const FlashString * flashText(const char * text) {
+	return F(text); // Too late if F() must transform the original literal.
+}
+
+runSuite(testView, "testView"); // The token and label can diverge.
+```
+
+**Preferred approach:**
+
+```cpp
+#define FLASH_TEXT(text) F(text)
+#define RUN_SUITE(function) runSuite(function, #function)
+#define LOG(format, ...) debug_printf(format __VA_OPT__(,) __VA_ARGS__)
+```
+
+The macro should contribute only the preprocessing-specific part and delegate behavior to a typed function. This keeps evaluation, error handling and output policy in ordinary code while preserving the call-site information that a function cannot recover.
 
 ## Scope and evolution
 
