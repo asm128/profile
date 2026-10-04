@@ -34,6 +34,8 @@
 - [29. Normalize representations at the boundary that requires them](#29-normalize-representations-at-the-boundary-that-requires-them)
 - [30. Preserve type behavior when replacing macros with constexpr code](#30-preserve-type-behavior-when-replacing-macros-with-constexpr-code)
 - [31. Use macros when preprocessing is part of the operation](#31-use-macros-when-preprocessing-is-part-of-the-operation)
+- [32. Keep policy selectable at runtime even when the algorithm is constexpr](#32-keep-policy-selectable-at-runtime-even-when-the-algorithm-is-constexpr)
+- [33. Preserve the return channel when adding convenience](#33-preserve-the-return-channel-when-adding-convenience)
 - [Scope and evolution](#scope-and-evolution)
 - [Case study: separating single-path normalization from batch processing](#case-study-separating-single-path-normalization-from-batch-processing)
 - [Case study: diagnostic context from a failing check](#case-study-diagnostic-context-from-a-failing-check)
@@ -988,6 +990,116 @@ runSuite(testView, "testView"); // The token and label can diverge.
 ```
 
 The macro should contribute only the preprocessing-specific part and delegate behavior to a typed function. This keeps evaluation, error handling and output policy in ordinary code while preserving the call-site information that a function cannot recover.
+
+## 32. Keep policy selectable at runtime even when the algorithm is constexpr
+
+`constexpr` makes compile-time evaluation possible; it does not require policy selection to happen at compile time. When input and interpretation commonly arrive dynamically, represent the policy as a value rather than encoding it exclusively in a template argument or platform branch.
+
+**Contrasting approach:**
+
+```cpp
+template<PATH_SYNTAX Syntax>
+constexpr int32_t pathParse(SStringView input, SPathView & output);
+
+#ifdef _WIN32
+using TNativePathParser = TPathParser<PATH_SYNTAX::WINDOWS>;
+#else
+using TNativePathParser = TPathParser<PATH_SYNTAX::POSIX>;
+#endif
+```
+
+This can evaluate efficiently, but it makes interpretation part of the compiled type. A cross-platform inspection tool running on Linux loses the direct ability to apply Windows path semantics to supplied data. A dynamically supplied URL similarly should not require a new parser type merely because its syntax is selected after the program starts.
+
+**Preferred approach:**
+
+```cpp
+enum class PATH_SYNTAX : uint8_t
+	{ NATIVE
+	, WINDOWS
+	, POSIX
+	, URI
+	};
+
+struct SPathPolicy {
+	PATH_SYNTAX Syntax;
+};
+
+constexpr int32_t pathParse
+	( SStringView		input
+	, const SPathPolicy	& policy
+	, SPathView			& output
+	);
+
+SPathPolicy policy = choosePathPolicy(arguments, input);
+if_fail_fe(pathParse(input, policy, parsed));
+```
+
+The same function remains usable in a `static_assert` when its input and policy are constant. Most calls may still execute at runtime with runtime text and a runtime-selected policy. Named constants such as `PATH_POLICY_WINDOWS` remain useful defaults, but they are values that any caller can select—not compile-time identities that restrict what the program can interpret.
+
+For path parsing, the selected policy should implement documented grammar rather than query the host for what a prefix means. Windows distinguishes drive-absolute, drive-relative, current-drive-rooted, UNC and device forms; POSIX and URI policies have their own prefix rules. Preserve the complete prefix until the selected policy classifies it. Only actual filesystem observations—such as enumerating a directory or querying an entry—belong at the native boundary. Microsoft documents the relevant Windows categories in [Naming Files, Paths, and Namespaces](https://learn.microsoft.com/en-us/windows/desktop/fileio/naming-a-file) and [File path formats on Windows systems](https://learn.microsoft.com/dotnet/standard/io/file-path-formats).
+
+This separation also permits layered parsing. A URI parser can return unchanged views of its scheme, authority, path, query and fragment; a separate query parser can then interpret key/value syntax and decoding rules. Dynamic policy selection and compile-time testability reinforce each other when `constexpr` is treated as a capability rather than a dispatch mechanism.
+
+## 33. Preserve the return channel when adding convenience
+
+A convenience overload should remove repeated calling syntax, not remove behavior. When an operation can fail or reports an operational result, retain the signed result channel and deliver produced objects through output parameters. Returning the produced object directly is not an equivalent simplification if it discards an existing result.
+
+**Contrasting approach:**
+
+```cpp
+template<typename T>
+llc::view<T> split
+	( typename llc::view<T>::TCnst & separator
+	, const llc::view<T>            & input
+	) {
+	const llc::err_t offset = llc::find(separator, input);
+	llc::view<T> left;
+	input.slice(left, 0, (llc::u2_t)offset); // Result discarded.
+	return left;
+}
+```
+
+This overload is shorter at the call site, but it has erased the result of `slice()`. An empty view cannot reliably replace the missing failure channel because empty may be a valid result. The API has less functionality even though the expression that calls it has fewer characters.
+
+**Preferred approach:**
+
+```cpp
+template<typename T>
+llc::err_t split
+	( typename llc::view<T>::TCnst & separator
+	, llc::view<T>                  & input
+	) {
+	const llc::err_t offset = llc::find(separator, input);
+	return input.slice(input, 0, (llc::u2_t)offset);
+}
+```
+
+The caller can build heavier forms without duplicating the search:
+
+```cpp
+left = original;
+if_fail_fe(llc::split(separator, left));
+
+if(left.size() == original.size()) {
+	right = {};
+	return -1;
+}
+
+if_fail_fe(original.slice(right, left.size() + 1));
+return left.size();
+```
+
+This composition also reuses the existing sentinel convention. `find()` returns `-1` when the separator is absent. Converted to the unsigned slice count, it becomes the established `(u2_t)-1` value meaning the complete remaining range. The smaller operation therefore leaves the full input view when nothing is found, and the heavier overload detects that condition by comparing sizes.
+
+Review convenience at the signature level before judging the body or line count:
+
+- Does every previous failure remain representable?
+- Is every operational result still available?
+- Are valid empty values still distinguishable from failure?
+- Are produced objects returned through the established ownership and mutation boundary?
+- Is any ignored `err_t` visible in the implementation?
+
+If the shorter form cannot answer those questions equivalently, it is functionality erasure rather than simplification.
 
 ## Scope and evolution
 
