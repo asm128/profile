@@ -12,10 +12,20 @@ const profileJSON = `{
     "label": "Independent systems consulting",
     "title": "Make complex software cheaper to change.",
     "introduction": "I make software simpler to build, maintain, and change.",
+    "experience": {"value": "20+ years", "description": "Software development"},
     "actions": [
       {"title": "Discuss a system", "url": "mailto:pabloaz@gmail.com?subject=Systems consulting"},
       {"title": "Read my CV", "url": "./cv.html", "secondary": true}
     ]
+  },
+  "site": {
+    "title": "This website",
+    "metrics": {
+      "navigation_time": {"value": "Measuring…", "description": "Navigation start → profile DOM ready"},
+      "render_time": {"value": "Measuring render…", "description": "Profile JSON → rendered DOM"},
+      "source_size": {"value": "Measuring size…", "description": "Homepage source, uncompressed"},
+      "size_comparison": {"value": "Comparing size…", "description": "Versus 2,862 KB desktop median (2025)"}
+    }
   },
   "services": {
     "id": "services",
@@ -29,20 +39,14 @@ const profileJSON = `{
   },
   "evidence": {
     "label": "Recorded evidence",
-    "title": "Work that can be inspected",
-    "metrics": {
-      "experience": {"value": "20+ years", "description": "Software development"},
-      "gpk": {"value": "1,277 commits", "description": "403 source files · 24 projects · 2018–2026", "source": "./evidence/repository-history.md"},
-      "gpk_samples": {"value": "333 commits", "description": "165 source files · 34 projects · 2018–2026", "source": "./evidence/repository-history.md"},
-      "gpk_games": {"value": "229 commits", "description": "106 source files · 20 projects · 2022–2026", "source": "./evidence/repository-history.md"},
-      "blitter": {"value": "122 commits", "description": "12 source files · 5 projects · 2019–2026", "source": "./evidence/repository-history.md"},
-      "llc": {"value": "91 commits", "description": "199 source files · 10 projects · 2024–2026", "source": "./evidence/repository-history.md"},
-      "firmware_commits": {"value": "693 commits", "description": "2 firmware histories · 2022–2024", "source": "./analysis/spaceai-firmware/README.md#measured-scope"},
-      "firmware_lines": {"value": "8,986 lines", "description": "81 source files · 5 components", "source": "./analysis/spaceai-firmware/README.md#measured-scope"},
-      "navigation_time": {"value": "Measuring…", "description": "Navigation start → profile DOM ready"},
-      "render_time": {"value": "Measuring render…", "description": "Profile JSON → rendered DOM"},
-      "source_size": {"value": "Measuring size…", "description": "Homepage source, uncompressed"},
-      "size_comparison": {"value": "Comparing size…", "description": "Versus 2,862 KB desktop median (2025)"}
+    "title": "Repository history",
+    "repositories": {
+      "gpk": {"label": "GPK", "value": "1,277 commits / 46,911 LoC", "description": "403 source files · 24 projects · 2018–2026", "source": "./evidence/repository-history.md"},
+      "gpk_samples": {"label": "GPK samples", "value": "333 commits / 27,603 LoC", "description": "165 source files · 34 projects · 2018–2026", "source": "./evidence/repository-history.md"},
+      "gpk_games": {"label": "GPK games", "value": "229 commits / 14,746 LoC", "description": "106 source files · 20 projects · 2022–2026", "source": "./evidence/repository-history.md"},
+      "blitter": {"label": "Blitter", "value": "122 commits / 1,859 LoC", "description": "12 source files · 5 projects · 2019–2026", "source": "./evidence/repository-history.md"},
+      "llc": {"label": "LLC", "value": "91 commits / 25,553 LoC", "description": "199 source files · 10 projects · 2024–2026", "source": "./evidence/repository-history.md"},
+      "firmware": {"label": "SpaceAI firmware", "value": "693 commits / 8,986 LoC", "description": "2 histories · 81 source files · 5 components · 2022–2024", "source": "./analysis/spaceai-firmware/README.md#measured-scope"}
     }
   },
   "studies": {
@@ -91,7 +95,7 @@ const profileJSON = `{
 }`;
 
 const profile = JSON.parse(profileJSON);
-const homepageSourceSnapshot = {bytes: 109385.0, count: 8};
+const homepageSourceSnapshot = {bytes: 109394.0, count: 8};
 
 const appendSectionHeading = (section, data) => {
   section.append(element("div", "label", data.label));
@@ -146,6 +150,9 @@ document.addEventListener("DOMContentLoaded", () => {
   heroCopy.append(element("div", "eyebrow", profile.hero.label));
   heroCopy.append(element("h1", "", profile.hero.title));
   heroCopy.append(element("p", "intro", profile.hero.introduction));
+  const experience = element("p", "hero-experience");
+  experience.append(element("strong", "", profile.hero.experience.value), " · " + profile.hero.experience.description);
+  heroCopy.append(experience);
   const actions = element("div", "actions");
   for(const action of profile.hero.actions)
     actions.append(link(action.title, action.url, "button" + (action.secondary ? " secondary" : "")));
@@ -172,6 +179,25 @@ document.addEventListener("DOMContentLoaded", () => {
   hero.append(cubeFigure);
   main.append(hero);
 
+  const site = element("section", "site-diagnostics");
+  site.append(element("h2", "", profile.site.title));
+  const metrics = element("div", "metrics");
+  const metricValues = {};
+  const metricDescriptions = {};
+  for(const [id, data] of Object.entries(profile.site.metrics)) {
+    const metric = element("div", "metric");
+    const metricValue = element("strong", "", data.value);
+    const metricDescription = data.source
+      ? link(data.description, data.source, "metric-source")
+      : element("span", "", data.description);
+    metricValues[id] = metricValue;
+    metricDescriptions[id] = metricDescription;
+    metric.append(metricValue, metricDescription);
+    metrics.append(metric);
+  }
+  site.append(metrics);
+  main.append(site);
+
   const services = element("section");
   services.id = profile.services.id;
   appendSectionHeading(services, profile.services);
@@ -187,21 +213,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const evidence = element("section");
   appendSectionHeading(evidence, profile.evidence);
-  const metrics = element("div", "metrics");
-  const metricValues = {};
-  const metricDescriptions = {};
-  for(const [id, data] of Object.entries(profile.evidence.metrics)) {
-    const metric = element("div", "metric");
-    const metricValue = element("strong", "", data.value);
-    const metricDescription = data.source
-      ? link(data.description, data.source, "metric-source")
-      : element("span", "", data.description);
-    metricValues[id] = metricValue;
-    metricDescriptions[id] = metricDescription;
-    metric.append(metricValue, metricDescription);
-    metrics.append(metric);
+  const repositoryList = element("ul", "repository-list");
+  for(const data of Object.values(profile.evidence.repositories)) {
+    const item = element("li", "repository");
+    item.append(element("span", "repository-name", data.label));
+    item.append(element("strong", "", data.value));
+    item.append(link(data.description, data.source, "metric-source"));
+    repositoryList.append(item);
   }
-  evidence.append(metrics);
+  evidence.append(repositoryList);
   main.append(evidence);
 
   const studies = element("section");
@@ -209,8 +229,11 @@ document.addEventListener("DOMContentLoaded", () => {
   appendSectionHeading(studies, profile.studies);
   const articleColumns = element("div", "articles");
   for(const subsection of profile.studies.subsections) {
-    const group = element("div", "article-group");
-    group.append(element("h3", "", subsection.title));
+    const group = element("details", "article-group");
+    const summary = element("summary");
+    summary.append(element("h3", "", subsection.title));
+    summary.append(element("span", "article-count", `${Object.keys(subsection.articles).length} articles`));
+    group.append(summary);
     const list = element("ul");
     for(const [title, url] of Object.entries(subsection.articles)) {
       const item = element("li");

@@ -18,16 +18,16 @@ The homepage currently requires eight same-origin source files:
 | Resource | Uncompressed bytes |
 | --- | ---: |
 | `index.html` | 774 |
-| `profile.css` | 4,105 |
+| `profile.css` | 4,143 |
 | `gl-matrix-min.js` | 52,466 |
 | `gpk_engine.js` | 18,364 |
 | `galaxy_explosion.js` | 6,859 |
 | `cube.js` | 14,158 |
 | `dom.js` | 529 |
-| `profile.js` | 12,130 |
-| **Total** | **109,385 bytes / 106.82 KiB** |
+| `profile.js` | 12,101 |
+| **Total** | **109,394 bytes / 106.83 KiB** |
 
-The byte table uses the UTF-8, LF-normalized representation published from the repository. The WebGL scene uses generated graphics rather than image payloads. Its matrix, engine, explosion and cube scripts contribute 91,847 bytes; all JavaScript together contributes 104,506 bytes. All resources are served locally: there are no image, web-font, framework or remote third-party requests. HTTP compression can reduce the transferred body further; the table deliberately uses the larger uncompressed source size. Protocol headers and the content of articles opened later are outside this homepage total.
+The byte table uses the UTF-8, LF-normalized representation published from the repository. The WebGL scene uses generated graphics rather than image payloads. Its matrix, engine, explosion and cube scripts contribute 91,847 bytes; all JavaScript together contributes 104,477 bytes. All resources are served locally: there are no image, web-font, framework or remote third-party requests. HTTP compression can reduce the transferred body further; the table deliberately uses the larger uncompressed source size. Protocol headers and the content of articles opened later are outside this homepage total.
 
 The live metric discovers the same set from the current document, stylesheet link and script elements. It uses decoded sizes already reported by Resource Timing and fetches only missing bodies through the browser cache. Local-file previews can expose neither complete Resource Timing bodies nor fetch access; in that environment the page uses the exact published snapshot recorded in `profile.js` rather than publishing a partial total or an unavailable value.
 
@@ -35,7 +35,7 @@ The live metric discovers the same set from the current document, stylesheet lin
 
 The [HTTP Archive 2025 Web Almanac page-weight study](https://almanac.httparchive.org/en/2025/page-weight) reports a median home-page weight of 2,862 KB on desktop and 2,559 KB on mobile. Its median desktop home page includes 697 KB of JavaScript, 82 KB of CSS, 139 KB of fonts and 1,058 KB of images.
 
-Against the desktop median, this homepage's 109,385 uncompressed bytes are:
+Against the desktop median, this homepage's 109,394 uncompressed bytes are:
 
 - About **1/26.2 of the payload**.
 - **96.18% smaller** at two-decimal display precision.
