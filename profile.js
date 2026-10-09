@@ -72,6 +72,7 @@ const profileJSON = `{
       },
       {
         "title": "Development evidence",
+        "layout": "evidence-columns",
         "articles": {
           "Manual allocation and ownership audit": "./evidence/manual-allocation-audit.md",
           "Repository history scope and counts": "./evidence/repository-history.md",
@@ -232,7 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
   appendSectionHeading(studies, profile.studies);
   const articleColumns = element("div", "articles");
   for(const subsection of profile.studies.subsections) {
-    const group = element("details", "article-group");
+    const group = element("details", `article-group ${subsection.layout || ""}`.trim());
     const summary = element("summary");
     summary.append(element("h3", "", subsection.title));
     summary.append(element("span", "article-count", `${Object.keys(subsection.articles).length} articles`));
