@@ -180,8 +180,11 @@ function startCanvasFallback(canvas, frameStats) {
 }
 
 function startCube(gl, canvas, frameStats) {
-  const engine = new gpkEngine.SEngine();
-  const cube = engine.CreateBox({Origin: [1, 1, 1], HalfSizes: [1, 1, 1]}, "Logo cube");
+  const game = new galaxyGame.SGalaxyGame();
+  galaxyGame.galaxyGameSetup(game);
+  const engine = game.Engine;
+  const cube = game.Cube;
+  const explosion = game.Explosions[0];
   const scene = engine.Scene;
   const graphics = scene.Graphics;
   const node = scene.RenderNodes.RenderNodes[engine.GetRenderNode(cube)];
@@ -206,7 +209,11 @@ function startCube(gl, canvas, frameStats) {
 
   const indexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+  const indexType = indices.BYTES_PER_ELEMENT === 1 ? gl.UNSIGNED_BYTE
+    : indices.BYTES_PER_ELEMENT === 2 ? gl.UNSIGNED_SHORT : gl.UNSIGNED_INT;
+  if(indices.BYTES_PER_ELEMENT === 4 && !gl.getExtension("OES_element_index_uint"))
+    return 0;
 
   const vertexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
@@ -262,8 +269,6 @@ function startCube(gl, canvas, frameStats) {
   const modelView = mat4.create();
   const orientation = quat.create();
   const rotationAxis = vec3.normalize(vec3.create(), [1, 1, 1]);
-  engine.SetPosition(cube, [0, 0, -12]);
-  const explosion = new galaxyExplosion.SExplosion(engine, cube);
   mat4.perspective(projection, Math.PI / 4, canvas.width / canvas.height, .1, 100);
 
   gl.viewport(0, 0, canvas.width, canvas.height);
@@ -276,7 +281,6 @@ function startCube(gl, canvas, frameStats) {
   const hitModel = mat4.create();
   const hitTransform = mat4.create();
   const hitVertex = vec3.create();
-  engine.UpdateTransforms();
   const hitCube = (clientX, clientY) => {
     if(explosion.Active || !Number.isFinite(clientX) || !Number.isFinite(clientY)) return false;
     const bounds = canvas.getBoundingClientRect();
@@ -310,12 +314,12 @@ function startCube(gl, canvas, frameStats) {
     canvas.style.cursor = hitCube(event.clientX, event.clientY) ? "pointer" : "default";
   });
   canvas.addEventListener("click", event => {
-    if(hitCube(event.clientX, event.clientY)) explosion.Start();
+    if(hitCube(event.clientX, event.clientY)) galaxyGame.galaxyGameExplode(game);
   });
   canvas.addEventListener("keydown", event => {
     if(event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
-    explosion.Start();
+    galaxyGame.galaxyGameExplode(game);
   });
 
   const drawEntity = entity => {
@@ -328,7 +332,7 @@ function startCube(gl, canvas, frameStats) {
     mat4.multiply(modelView, scene.RenderNodes.Transforms[nodeId].Model, scene.RenderNodes.BaseTransforms[nodeId].Model);
     gl.uniformMatrix4fv(modelViewLocation, false, modelView);
     const slice = renderMesh.GeometrySlices[renderNode.Slice].Slice;
-    gl.drawElements(gl.TRIANGLES, slice[1], gl.UNSIGNED_SHORT, slice[0] * Uint16Array.BYTES_PER_ELEMENT);
+    gl.drawElements(gl.TRIANGLES, slice[1], indexType, slice[0] * indices.BYTES_PER_ELEMENT);
   };
 
   let textureTime = -1;
@@ -348,14 +352,10 @@ function startCube(gl, canvas, frameStats) {
     gl.clearColor(.043, .055, .071, 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     quat.setAxisAngle(orientation, rotationAxis, time * .5);
-    engine.SetOrientation(cube, orientation);
-    engine.Update(duration);
-    explosion.Update(duration);
-    if(explosion.Active) engine.UpdateTransforms();
+    galaxyGame.galaxyGameUpdate(game, duration, orientation);
     gl.uniformMatrix4fv(projectionLocation, false, projection);
-    drawEntity(cube);
-    for(const entity of explosion.Parts) drawEntity(entity);
-    for(const entity of explosion.Debris) drawEntity(entity);
+    for(let entity = 0; entity < engine.Entities.size(); ++entity)
+      drawEntity(entity);
     frameStats(now);
     requestAnimationFrame(render);
   };

@@ -1,6 +1,7 @@
 "use strict";
 
-// Galaxy Hell's sliced-mesh explosion, driven here by gpk_engine rigid bodies.
+// Galaxy Hell explosion behavior represented entirely by gpk_engine resources.
+// The ssiege-style game owner creates and updates this entity/node/skin/body state.
 const galaxyExplosion = (() => {
   const {mat4, vec3} = glMatrix;
   function randomDirection(random, rotateZ = false) {
@@ -16,7 +17,6 @@ const galaxyExplosion = (() => {
 
   class SExplosion {
     constructor(engine, source, random = Math.random) {
-      this.Engine = engine;
       this.Source = source;
       this.Random = random;
       this.Slices = [];
@@ -63,8 +63,7 @@ const galaxyExplosion = (() => {
         this.Debris.push(spark);
       }
     }
-    LaunchBody(entity, position, orientation, direction, speed, spin) {
-      const engine = this.Engine;
+    LaunchBody(engine, entity, position, orientation, direction, speed, spin) {
       const integrator = engine.Integrator;
       const body = engine.GetRigidBody(entity);
       const frame = integrator.Frames[body];
@@ -80,8 +79,7 @@ const galaxyExplosion = (() => {
       integrator.Masses[body].AngularDamping = 1;
       engine.Scene.RenderNodes.Flags[engine.GetRenderNode(entity)].NoDraw = false;
     }
-    Start() {
-      const engine = this.Engine;
+    Start(engine) {
       engine.UpdateTransforms();
       const sourceNode = engine.GetRenderNode(this.Source);
       const sourceModel = engine.Scene.RenderNodes.Transforms[sourceNode].Model;
@@ -98,7 +96,7 @@ const galaxyExplosion = (() => {
         else if(slice % 3) spin[0] = 2;
         else if(slice % 5) spin[1] = 2;
         this.PartDirections[slice] = direction;
-        this.LaunchBody(this.Parts[slice], center, orientation, direction, 13, spin);
+        this.LaunchBody(engine, this.Parts[slice], center, orientation, direction, 13, spin);
       }
       for(let index = 0; index < this.Debris.length; ++index) {
         const spark = this.Debris[index];
@@ -106,13 +104,12 @@ const galaxyExplosion = (() => {
         this.DebrisDirections[index] = direction;
         this.DebrisSpeed[index] = 13;
         this.DebrisBrightness[index] = 2.8;
-        this.LaunchBody(spark, center, orientation, direction, 13, [0, 0, 0]);
+        this.LaunchBody(engine, spark, center, orientation, direction, 13, [0, 0, 0]);
         engine.Integrator.Flags[engine.GetRigidBody(spark)].Active = false;
       }
     }
-    Update(duration) {
+    Update(engine, duration) {
       if(!this.Active) return;
-      const engine = this.Engine;
       const integrator = engine.Integrator;
       if(duration > 0) {
         for(let index = 0; index < this.Parts.length; ++index) {
