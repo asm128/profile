@@ -61,7 +61,15 @@ const gpkEngine = (() => {
   }
 
   function nodeConstants() {
-    return {Model: glMatrix.mat4.create(), NodeSize: [0, 0, 0]};
+    return {
+      Material: {Color: {Diffuse: [1, 0, 0, 1], Ambient: [0, 1, 0, 1], Specular: [.75, .75, .75, 1]}, Emission: [0, 0, 0], SpecularPower: 0},
+      MVP: glMatrix.mat4.create(),
+      Model: glMatrix.mat4.create(),
+      ModelInverse: glMatrix.mat4.create(),
+      ModelInverseTranspose: glMatrix.mat4.create(),
+      NodeSize: [0, 0, 0],
+      PaddingC: 0,
+    };
   }
 
   class SRenderNodeManager {
@@ -72,13 +80,16 @@ const gpkEngine = (() => {
       this.BaseTransforms = [];
       this.Lights = [];
       this.Cameras = [];
+      this.LightsDirectional = [];
+      this.LightsPoint = [];
+      this.LightsSpot = [];
     }
     Create() {
-      this.Flags.push({NoDraw: false});
+      this.Flags.push({NoAmbient: false, NoDiffuse: false, NoSpecular: false, NoAlphaTest: false, NoAlphaBlend: false, NoDraw: false});
       this.Transforms.push(nodeConstants());
       this.BaseTransforms.push(nodeConstants());
-      this.Lights.push([]);
-      this.Cameras.push([]);
+      this.Lights.push(null);
+      this.Cameras.push(null);
       return this.RenderNodes.push({Mesh: EID_INVALID, Slice: EID_INVALID, Shader: EID_INVALID, Skin: EID_INVALID}) - 1;
     }
     Clone(id) {
@@ -87,8 +98,8 @@ const gpkEngine = (() => {
       this.Flags[result] = copy(this.Flags[id]);
       this.Transforms[result] = copy(this.Transforms[id]);
       this.BaseTransforms[result] = copy(this.BaseTransforms[id]);
-      this.Lights[result] = copy(this.Lights[id]);
-      this.Cameras[result] = copy(this.Cameras[id]);
+      this.Lights[result] = this.Lights[id];
+      this.Cameras[result] = this.Cameras[id];
       return result;
     }
     size() { return this.RenderNodes.length; }
@@ -116,10 +127,10 @@ const gpkEngine = (() => {
         : vertexCount <= 65535 ? new Uint16Array(geometry.PositionIndices)
           : new Uint32Array(geometry.PositionIndices);
       const buffers = [
-        graphics.Buffers.Create({Usage: "Index", Data: indexData}),
-        graphics.Buffers.Create({Usage: "Position", Data: new Float32Array(geometry.Positions)}),
-        graphics.Buffers.Create({Usage: "Normal", Data: new Float32Array(geometry.Normals)}),
-        graphics.Buffers.Create({Usage: "TextureCoord", Data: new Float32Array(geometry.TextureCoords)}),
+        graphics.Buffers.Create({Desc: {Usage: "Index", Format: indexData.constructor.name}, Data: indexData}),
+        graphics.Buffers.Create({Desc: {Usage: "Position", Format: "Float32x3"}, Data: new Float32Array(geometry.Positions)}),
+        graphics.Buffers.Create({Desc: {Usage: "Normal", Format: "Float32x3"}, Data: new Float32Array(geometry.Normals)}),
+        graphics.Buffers.Create({Desc: {Usage: "UV", Format: "Float32x2"}, Data: new Float32Array(geometry.TextureCoords)}),
       ];
       const mesh = {GeometryBuffers: buffers, GeometrySlices: [], Desc: {Mode: "List", Type: "Triangle", NormalMode: "Point"}};
       const idMesh = graphics.Meshes.Create(mesh, name);
@@ -241,26 +252,29 @@ const gpkEngine = (() => {
     }
     SetPosition(id, position) {
       const center = this.Centers[id];
-      if(position.every((value, axis) => value === center.Position[axis])) return;
+      if(position.every((value, axis) => Object.is(Math.fround(value), center.Position[axis]))) return;
       glMatrix.vec3.copy(center.Position, position);
       this.Flags[id].UpdatedTransform = this.Flags[id].UpdatedTensorWorld = false;
     }
     SetOrientation(id, orientation) {
       const center = this.Centers[id];
-      if(orientation.every((value, axis) => value === center.Orientation[axis])) return;
+      if(orientation.every((value, axis) => Object.is(Math.fround(value), center.Orientation[axis]))) return;
       glMatrix.quat.copy(center.Orientation, orientation);
       this.Flags[id].UpdatedTransform = this.Flags[id].UpdatedTensorWorld = false;
     }
     SetVelocity(id, velocity) {
+      if(velocity.every((value, axis) => Object.is(Math.fround(value), this.Forces[id].Velocity[axis]))) return;
       glMatrix.vec3.copy(this.Forces[id].Velocity, velocity);
       this.Flags[id].Active = true;
       if(velocity[1]) this.Flags[id].Falling = true;
     }
     SetAcceleration(id, acceleration) {
+      if(acceleration.every((value, axis) => Object.is(Math.fround(value), this.Forces[id].Acceleration[axis]))) return;
       glMatrix.vec3.copy(this.Forces[id].Acceleration, acceleration);
       this.Flags[id].Active = true;
     }
     SetRotation(id, rotation) {
+      if(rotation.every((value, axis) => Object.is(Math.fround(value), this.Forces[id].Rotation[axis]))) return;
       glMatrix.vec3.copy(this.Forces[id].Rotation, rotation);
       this.Flags[id].Active = true;
       if(rotation[0] || rotation[2]) this.Flags[id].Falling = true;
@@ -279,7 +293,6 @@ const gpkEngine = (() => {
       this.Flags[id].Active = true;
     }
     Integrate(duration) {
-      if(!Number.isFinite(duration) || duration <= 0) return;
       const {quat, vec3} = glMatrix;
       for(let id = 0; id < this.Flags.length; ++id) {
         const flags = this.Flags[id];
@@ -297,7 +310,8 @@ const gpkEngine = (() => {
         vec3.scale(forces.Rotation, forces.Rotation, Math.pow(mass.AngularDamping, duration));
         vec3.set(frame.AccumulatedForce, 0, 0, 0);
         vec3.set(frame.AccumulatedTorque, 0, 0, 0);
-        vec3.scaleAndAdd(center.Position, center.Position, forces.Velocity, duration + duration * duration * .5);
+        vec3.scaleAndAdd(center.Position, center.Position, forces.Velocity, duration);
+        vec3.scaleAndAdd(center.Position, center.Position, forces.Velocity, duration * duration * .5);
         const deltaRotation = quat.fromValues(forces.Rotation[0] * duration, forces.Rotation[1] * duration, forces.Rotation[2] * duration, 0);
         quat.multiply(deltaRotation, deltaRotation, center.Orientation);
         for(let axis = 0; axis < 4; ++axis) center.Orientation[axis] += deltaRotation[axis] * .5;
@@ -369,7 +383,10 @@ const gpkEngine = (() => {
     AddForceAtPoint(idEntity, force, point) { this.Integrator.AddForceAtPoint(this.GetRigidBody(idEntity), force, point); }
     SetMeshPosition(idEntity, position) {
       const node = this.GetRenderNode(idEntity);
-      glMatrix.mat4.fromTranslation(this.Scene.RenderNodes.BaseTransforms[node].Model, position);
+      const model = this.Scene.RenderNodes.BaseTransforms[node].Model;
+      model[12] = position[0];
+      model[13] = position[1];
+      model[14] = position[2];
     }
     SetParent(idEntity, idParent) { this.Entities.SetParent(idEntity, idParent); }
     Update(duration) {
@@ -378,20 +395,30 @@ const gpkEngine = (() => {
     }
     UpdateTransforms() {
       const {mat4} = glMatrix;
-      const update = (idEntity, parentModel) => {
+      const update = idEntity => {
         const entity = this.Entities.Entities[idEntity];
+        const parent = entity.Parent === EID_INVALID ? null : this.Entities.Entities[entity.Parent];
+        const parentModel = !parent ? null : parent.RenderNode !== EID_INVALID
+          ? this.Scene.RenderNodes.Transforms[parent.RenderNode].Model
+          : parent.RigidBody !== EID_INVALID ? this.Integrator.TransformsLocal[parent.RigidBody] : null;
         const local = mat4.create();
         if(entity.RigidBody !== EID_INVALID)
           mat4.copy(local, this.Integrator.GetTransform(entity.RigidBody));
         const model = mat4.create();
         if(parentModel) mat4.multiply(model, parentModel, local);
         else mat4.copy(model, local);
-        if(entity.RenderNode !== EID_INVALID)
-          mat4.copy(this.Scene.RenderNodes.Transforms[entity.RenderNode].Model, model);
-        for(const child of this.Entities.Children[idEntity]) update(child, model);
+        if(entity.RenderNode !== EID_INVALID) {
+          const transforms = this.Scene.RenderNodes.Transforms[entity.RenderNode];
+          mat4.copy(transforms.Model, model);
+          mat4.invert(transforms.ModelInverse, model);
+          mat4.transpose(transforms.ModelInverseTranspose, transforms.ModelInverse);
+        }
+        else if(entity.RigidBody !== EID_INVALID)
+          mat4.copy(this.Integrator.TransformsLocal[entity.RigidBody], model);
+        for(const child of this.Entities.Children[idEntity]) update(child);
       };
       for(let id = 0; id < this.Entities.size(); ++id)
-        if(this.Entities.Entities[id].Parent === EID_INVALID) update(id, null);
+        if(this.Entities.Entities[id].Parent === EID_INVALID) update(id);
     }
   }
 
