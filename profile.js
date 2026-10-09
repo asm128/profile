@@ -1,12 +1,11 @@
 "use strict";
 
 const profileJSON = `{
-  "name": "Pablo Zorrilla",
-  "email": "pabloaz@gmail.com",
+  "name": "Factor Nine",
+  "email": "rgbvillain@gmail.com",
   "navigation": {
     "Services": "#services",
-    "Studies": "#studies",
-    "CV": "./cv.html"
+    "Studies": "#studies"
   },
   "hero": {
     "label": "Independent systems consulting",
@@ -14,8 +13,7 @@ const profileJSON = `{
     "introduction": "I make software simpler to build, maintain, and change.",
     "experience": {"value": "20+ years", "description": "Software development"},
     "actions": [
-      {"title": "Discuss a system", "url": "mailto:pabloaz@gmail.com?subject=Systems consulting"},
-      {"title": "Read my CV", "url": "./cv.html", "secondary": true}
+      {"title": "Discuss a system", "url": "mailto:rgbvillain@gmail.com?subject=Systems consulting"}
     ]
   },
   "site": {
@@ -134,13 +132,6 @@ const formatSmallerPercentage = value => {
 
 document.addEventListener("DOMContentLoaded", () => {
   const renderStarted = performance.now();
-  const header = document.getElementById("site-header");
-  header.append(link(profile.name, "./index.html", "name"));
-  const navigation = element("nav");
-  for(const [title, url] of Object.entries(profile.navigation))
-    navigation.append(link(title, url));
-  header.append(navigation);
-
   const main = document.getElementById("site-main");
   const hero = element("div", "hero");
   const heroCopy = element("div", "hero-copy");
@@ -244,10 +235,12 @@ document.addEventListener("DOMContentLoaded", () => {
   main.append(studies);
 
   const footer = document.getElementById("site-footer");
-  footer.append(profile.name + " · ");
-  footer.append(link(profile.email, "mailto:" + profile.email));
-  footer.append(" · ");
-  footer.append(link("Curriculum vitae", "./cv.html"));
+  const identity = element("div", "footer-identity");
+  identity.append(link(profile.name, "./index.html", "name"), " · ", link(profile.email, "mailto:" + profile.email));
+  const navigation = element("nav");
+  for(const [title, url] of Object.entries(profile.navigation))
+    navigation.append(link(title, url));
+  footer.append(identity, navigation);
 
   const renderFinished = performance.now();
   metricValues.navigation_time.textContent = `${renderFinished.toFixed(2)} ms`;

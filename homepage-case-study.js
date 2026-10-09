@@ -4,7 +4,7 @@ const articleJSON = `{
   "title": "The cost of unnecessary engineering",
   "subtitle": "A homepage case study · Implementation cost, maintenance cost and corrective decisions",
   "navigation": {
-    "Pablo Zorrilla — Home": "./index.html",
+    "Factor Nine — Home": "./index.html",
     "Article index": "./articles.md"
   },
   "sections": [

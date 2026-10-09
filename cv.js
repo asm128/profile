@@ -1,10 +1,10 @@
 "use strict";
 
 const articleJSON = `{
-  "title": "Pablo Ariel Zorrilla Cepeda",
+  "title": "Factor Nine",
   "subtitle": "Curriculum vitae",
   "navigation": {
-    "Pablo Zorrilla — Home": "./index.html",
+    "Factor Nine — Home": "./index.html",
     "Studies": "./index.html#studies"
   },
   "sections": [
@@ -14,7 +14,7 @@ const articleJSON = `{
         {
           "type": "links",
           "items": {
-            "pabloaz@gmail.com": "mailto:pabloaz@gmail.com"
+            "rgbvillain@gmail.com": "mailto:rgbvillain@gmail.com"
           }
         }
       ]

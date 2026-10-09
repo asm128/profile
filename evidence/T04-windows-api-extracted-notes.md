@@ -1,6 +1,6 @@
 # Native Windows API video — extracted notes
 
-The supplied transcript is imperfect, but this recording is clearly attributable to Pablo: the screenshot identifies the channel as RGB Villain, and the narration, project paths and CED playlist context match the author's development material. The video is a teaching presentation published July 20, 2022; its exact duration is not present in the pasted transcript.
+The supplied transcript is imperfect, but this recording is clearly attributable to the site author: the screenshot identifies the channel as RGB Villain, and the narration, project paths and CED playlist context match the author's development material. The video is a teaching presentation published July 20, 2022; its exact duration is not present in the pasted transcript.
 
 ## Reliable technical sequence
 
