@@ -110,6 +110,9 @@ p { margin-top: 0; }
 .site-diagnostics .metric { padding: 7px 12px; }
 .site-diagnostics .metric strong { font-size: 18px; }
 .site-diagnostics .metric span { font-size: 12px; }
+.site-diagnostics .metric-comparison { margin-top: 8px; }
+.site-diagnostics .metric-comparison strong { color: var(--accent); font-size: 15px; }
+.site-diagnostics .metric-comparison .metric-source { font-size: 12px; }
 .repository-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; margin: 0; padding: 1px; list-style: none; background: var(--line); }
 .repository { margin: 0; padding: 12px 14px; background: var(--background); }
 .repository-name { display: block; color: var(--muted); font: 700 13px/1.4 Consolas, monospace; text-transform: uppercase; }
@@ -135,16 +138,19 @@ footer { padding: 16px 0 24px; color: var(--muted); }
 #site-footer nav a { margin-left: 0; }
 
 @media (max-width: 1100px) {
-  .repository-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .article-group ul { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 850px) {
+  .repository-list { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 700px) {
   .hero { grid-template-columns: 1fr; }
   .hero-cube { width: 140px; justify-self: start; }
   .grid { grid-template-columns: 1fr; }
-  .repository-list, .article-group ul { grid-template-columns: 1fr; }
+  .article-group ul { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 360px) {

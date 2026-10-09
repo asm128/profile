@@ -11,36 +11,44 @@ Both values come from the browser's monotonic `performance.now()` clock. The fir
 
 The implementation adds no timing package or analytics dependency. It reads the browser clock before and after the existing renderer and writes the results into the evidence metrics already being generated.
 
+The two timing comparisons are calculated on each visit from those same durations:
+
+- Navigation time is shown as a percentage below or above the [HTTP Archive's July 2025 median desktop DOMContentLoaded time of 2.6 seconds](https://httparchive.org/reports/loading-speed): `(1 - visit milliseconds / 2600) × 100`. This is indicative. HTTP Archive measures the browser's DOMContentLoaded event under its own test conditions, while this page's timer ends after the handler builds the profile DOM.
+- DOM construction is shown as a share of this visit's navigation-to-DOM duration: `render milliseconds / navigation milliseconds × 100`. This compares two intervals from the same clock and visit, rather than claiming an industry benchmark for this renderer.
+
+The reference median is fixed and cited; the displayed elapsed times, percentages and below/above wording are computed from the visitor's measurements. Neither timing comparison measures layout, paint or the cube's ongoing animation.
+
 ## Static payload
 
-The homepage currently requires eight same-origin source files:
+The homepage source at the 2026-10-09 repository revision requires nine same-origin files:
 
 | Resource | Uncompressed bytes |
 | --- | ---: |
-| `index.html` | 774 |
-| `profile.css` | 4,143 |
+| `index.html` | 780 |
+| `profile.css` | 6,397 |
 | `gl-matrix-min.js` | 52,466 |
-| `gpk_engine.js` | 18,364 |
-| `galaxy_explosion.js` | 6,859 |
-| `cube.js` | 14,158 |
+| `gpk_engine.js` | 20,096 |
+| `galaxy_explosion.js` | 6,852 |
+| `galaxy_game.js` | 1,497 |
+| `cube.js` | 14,170 |
 | `dom.js` | 529 |
-| `profile.js` | 12,101 |
-| **Total** | **109,394 bytes / 106.83 KiB** |
+| `profile.js` | 14,022 |
+| **Total** | **116,809 bytes / 114.07 KiB** |
 
-The byte table uses the UTF-8, LF-normalized representation published from the repository. The WebGL scene uses generated graphics rather than image payloads. Its matrix, engine, explosion and cube scripts contribute 91,847 bytes; all JavaScript together contributes 104,477 bytes. All resources are served locally: there are no image, web-font, framework or remote third-party requests. HTTP compression can reduce the transferred body further; the table deliberately uses the larger uncompressed source size. Protocol headers and the content of articles opened later are outside this homepage total.
+The byte table uses the UTF-8, LF-normalized repository representation. The WebGL scene uses generated graphics rather than image payloads. Its matrix, engine, explosion, game and cube scripts contribute 95,081 bytes; all JavaScript together contributes 109,632 bytes. All resources are served locally: there are no image, web-font, framework or remote third-party requests. HTTP compression can reduce the transferred body further; the table deliberately uses the larger uncompressed source size. Protocol headers and the content of articles opened later are outside this homepage total.
 
-The live metric discovers the same set from the current document, stylesheet link and script elements. It uses decoded sizes already reported by Resource Timing and fetches only missing bodies through the browser cache. Local-file previews can expose neither complete Resource Timing bodies nor fetch access; in that environment the page uses the exact published snapshot recorded in `profile.js` rather than publishing a partial total or an unavailable value.
+The live metric discovers the set from the current document, stylesheet link and script elements. It uses decoded sizes already reported by Resource Timing and fetches only missing bodies through the browser cache. Local-file previews can expose neither complete Resource Timing bodies nor fetch access; in that environment the page uses the repository snapshot recorded in `profile.js` rather than publishing a partial total or an unavailable value. The table is a dated source snapshot; the live metric is measured independently on each visit and can differ until this revision is published.
 
 ## Comparison with the wider web
 
 The [HTTP Archive 2025 Web Almanac page-weight study](https://almanac.httparchive.org/en/2025/page-weight) reports a median home-page weight of 2,862 KB on desktop and 2,559 KB on mobile. Its median desktop home page includes 697 KB of JavaScript, 82 KB of CSS, 139 KB of fonts and 1,058 KB of images.
 
-Against the desktop median, this homepage's 109,394 uncompressed bytes are:
+Against the desktop median, this repository revision's 116,809 uncompressed bytes are:
 
-- About **1/26.2 of the payload**.
-- **96.18% smaller** at two-decimal display precision.
-- Its 104,461 bytes of JavaScript are about **1/6.7 of the median desktop home page's JavaScript payload**.
-- It uses eight same-origin source requests in total; the median September 2026 desktop page reported by [HTTP Archive's State of JavaScript](https://httparchive.org/reports/state-of-javascript) makes 23 JavaScript requests alone.
+- About **1/24.5 of the payload**.
+- **95.92% smaller** at two-decimal display precision.
+- Its 109,632 bytes of JavaScript are about **1/6.4 of the median desktop home page's JavaScript payload**.
+- It uses nine same-origin source requests in total; the median September 2026 desktop page reported by [HTTP Archive's State of JavaScript](https://httparchive.org/reports/state-of-javascript) makes 23 JavaScript requests alone.
 
 All calculations retain JavaScript's full floating-point precision until the display boundary. The smaller-than-median percentage normally uses two decimal places. If ordinary two-decimal rounding would produce the false claim `100.00% smaller`, the formatter adds decimal places until the displayed value is truthfully below 100%.
 

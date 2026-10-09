@@ -19,8 +19,8 @@ const profileJSON = `{
   "site": {
     "title": "This website",
     "metrics": {
-      "navigation_time": {"value": "Measuring…", "description": "Navigation start → profile DOM ready"},
-      "render_time": {"value": "Measuring render…", "description": "Profile JSON → rendered DOM"},
+      "navigation_time": {"value": "Measuring…", "description": "Navigation start → profile DOM ready", "comparison": {"value": "Comparing…", "description": "Indicative vs 2.6 s desktop median DOMContentLoaded (Jul 2025)", "source": "https://httparchive.org/reports/loading-speed"}},
+      "render_time": {"value": "Measuring render…", "description": "Profile JSON → rendered DOM", "comparison": {"value": "Comparing…", "description": "Share of this visit’s navigation-to-DOM time"}},
       "source_size": {"value": "Measuring size…", "description": "Homepage source, uncompressed"},
       "size_comparison": {"value": "Comparing size…", "description": "Versus 2,862 KB desktop median (2025)"}
     }
@@ -32,7 +32,7 @@ const profileJSON = `{
     "items": {
       "Architecture assessment": "Map ownership, dependencies, failure paths and development costs, then produce a practical improvement plan.",
       "Incremental refactoring": "Extract portable mechanisms and remove duplication without requiring a wholesale rewrite or framework replacement.",
-      "Systems implementation": "Build C++ libraries, graphics and simulation systems, firmware, diagnostics, configuration and supporting tools."
+      "Systems implementation": "Build C++ libraries, graphics and simulation systems, firmware, websites and Python backends, plus the diagnostics and configuration tools that support them."
     }
   },
   "evidence": {
@@ -90,7 +90,7 @@ const profileJSON = `{
 }`;
 
 const profile = JSON.parse(profileJSON);
-const homepageSourceSnapshot = {bytes: 109394.0, count: 8};
+const homepageSourceSnapshot = {bytes: 116809.0, count: 9};
 
 const appendSectionHeading = (section, data) => {
   section.append(element("div", "label", data.label));
@@ -129,6 +129,8 @@ const formatSmallerPercentage = value => {
     ++decimals;
   return value.toFixed(decimals);
 };
+
+const desktopMedianDOMContentLoadedMs = 2600.0; // HTTP Archive, July 2025 desktop p50.
 
 document.addEventListener("DOMContentLoaded", () => {
   const renderStarted = performance.now();
@@ -172,6 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const metrics = element("div", "metrics");
   const metricValues = {};
   const metricDescriptions = {};
+  const metricComparisons = {};
   for(const [id, data] of Object.entries(profile.site.metrics)) {
     const metric = element("div", "metric");
     const metricValue = element("strong", "", data.value);
@@ -181,6 +184,16 @@ document.addEventListener("DOMContentLoaded", () => {
     metricValues[id] = metricValue;
     metricDescriptions[id] = metricDescription;
     metric.append(metricValue, metricDescription);
+    if(data.comparison) {
+      const comparison = element("div", "metric-comparison");
+      const comparisonValue = element("strong", "", data.comparison.value);
+      const comparisonDescription = data.comparison.source
+        ? link(data.comparison.description, data.comparison.source, "metric-source")
+        : element("span", "", data.comparison.description);
+      metricComparisons[id] = comparisonValue;
+      comparison.append(comparisonValue, comparisonDescription);
+      metric.append(comparison);
+    }
     metrics.append(metric);
   }
   site.append(metrics);
@@ -243,8 +256,17 @@ document.addEventListener("DOMContentLoaded", () => {
   footer.append(identity, navigation);
 
   const renderFinished = performance.now();
+  const renderDuration = renderFinished - renderStarted;
   metricValues.navigation_time.textContent = `${renderFinished.toFixed(2)} ms`;
-  metricValues.render_time.textContent = `${(renderFinished - renderStarted).toFixed(2)} ms`;
+  metricValues.render_time.textContent = `${renderDuration.toFixed(2)} ms`;
+  const navigationDifference = (1.0 - renderFinished / desktopMedianDOMContentLoadedMs) * 100.0;
+  const navigationPercentage = navigationDifference >= 0
+    ? formatSmallerPercentage(navigationDifference)
+    : Math.abs(navigationDifference).toFixed(2);
+  metricComparisons.navigation_time.textContent = `${navigationPercentage}% ${navigationDifference >= 0 ? "below" : "above"} median`;
+  metricComparisons.render_time.textContent = renderFinished > 0
+    ? `${(renderDuration / renderFinished * 100.0).toFixed(2)}% of total`
+    : "Unavailable";
   window.addEventListener("load", async () => {
     const sizeMetric = metricValues.source_size;
     const comparisonMetric = metricValues.size_comparison;
