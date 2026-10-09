@@ -2,8 +2,8 @@
 
 This review concerns the final files in the archive, independently of commit count, chronology, or video duration. The snapshot contains two related pieces:
 
-- `rgb_tutorial`: the evolving demonstrations, ending in an integrated BitBlt example.
-- `rgblib`: the extracted reusable library, only 224 physical source lines across four implementation/header files.
+- [`rgb_tutorial`](https://github.com/RGBVillain/rgb_tutorial): the evolving demonstrations, ending in an integrated BitBlt example.
+- [`rgblib`](https://github.com/RGBVillain/rgblib): the extracted reusable library, only 224 physical source lines across four implementation/header files.
 
 ## What the final code achieved
 
@@ -17,7 +17,7 @@ Win32 messages -> SWindow event queue -> application logic
                  raster callback -> presentation with BitBlt
 ```
 
-The reusable center is visible in [`rgb_coord.h`](D:/dev_extras/evidence/rgb-archive/rgblib/rgb_coord.h) and [`rgb_window.h`](D:/dev_extras/evidence/rgb-archive/rgblib/rgb_window.h). Rasterization accepts a callback instead of owning a canvas, so the caller can choose its storage and combine the same geometry with different outputs. The final tutorial's [`bitblt.cpp`](D:/dev_extras/evidence/rgb-archive/rgb_tutorial/bitblt/bitblt.cpp) then demonstrates that design with a pixel buffer, event handling, color selection, circles, line segments, and a Windows presentation path.
+The reusable center is visible in [`rgb_coord.h`](https://github.com/RGBVillain/rgblib/blob/0498405101c214445da30e6ca973be146aafd83d/rgblib/rgb_coord.h) and [`rgb_window.h`](https://github.com/RGBVillain/rgblib/blob/0498405101c214445da30e6ca973be146aafd83d/rgblib/rgb_window.h). Rasterization accepts a callback instead of owning a canvas, so the caller can choose its storage and combine the same geometry with different outputs. The final tutorial's [`bitblt.cpp`](https://github.com/RGBVillain/rgb_tutorial/blob/a74eb2b12fe12973e9fef08789e002593715254b/bitblt/bitblt.cpp) then demonstrates that design with a pixel buffer, event handling, color selection, circles, line segments, and a Windows presentation path.
 
 That is a meaningful architectural transition: the tutorial discovers the abstractions, then the library keeps the useful ones. It also explains why the final code can remain small while supporting several demonstrations. A conventional approach would often duplicate a window loop and drawing state in every sample; this code factors the common mechanism and leaves each example focused on the next experiment.
 

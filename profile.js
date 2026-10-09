@@ -32,7 +32,7 @@ const profileJSON = `{
     "items": {
       "Architecture assessment": "Map ownership, dependencies, failure paths and development costs, then produce a practical improvement plan.",
       "Incremental refactoring": "Extract portable mechanisms and remove duplication without requiring a wholesale rewrite or framework replacement.",
-      "Systems implementation": "Build C++ libraries, graphics and simulation systems, firmware, websites and Python backends, plus the diagnostics and configuration tools that support them."
+      "Systems implementation": "Build libraries, graphics and simulation systems, firmware, websites and backend services, plus the diagnostics and configuration tools that support them."
     }
   },
   "evidence": {
@@ -78,6 +78,8 @@ const profileJSON = `{
           "Homepage loading and rendering measurements": "./evidence/homepage-performance.md",
           "RGB commit evidence": "./evidence/rgb-commit-analysis.md",
           "RGB final code review": "./evidence/rgb-final-code-review.md",
+          "RGB tutorial repository": "https://github.com/RGBVillain/rgb_tutorial",
+          "RGB library repository": "https://github.com/RGBVillain/rgblib",
           "Graphics 101 transcript notes": "./evidence/T03-graphics-101-02-extracted-notes.md",
           "Native Windows API video notes": "./evidence/T04-windows-api-extracted-notes.md",
           "Computación Gráfica playlist inventory": "./evidence/V17-computacion-grafica-playlist-notes.md",
@@ -90,7 +92,7 @@ const profileJSON = `{
 }`;
 
 const profile = JSON.parse(profileJSON);
-const homepageSourceSnapshot = {bytes: 116809.0, count: 9};
+const homepageSourceSnapshot = {bytes: 117007.0, count: 9};
 
 const appendSectionHeading = (section, data) => {
   section.append(element("div", "label", data.label));

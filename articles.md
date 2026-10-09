@@ -26,6 +26,8 @@
 - [Homepage loading and rendering measurements](./evidence/homepage-performance.md)
 - [RGB / Computación Gráfica commit evidence](./evidence/rgb-commit-analysis.md)
 - [RGB final code: snapshot review](./evidence/rgb-final-code-review.md)
+- [RGB tutorial repository](https://github.com/RGBVillain/rgb_tutorial)
+- [RGB library repository](https://github.com/RGBVillain/rgblib)
 - [Graphics 101: extracted notes from a noisy transcript](./evidence/T03-graphics-101-02-extracted-notes.md)
 - [Native Windows API video: extracted notes](./evidence/T04-windows-api-extracted-notes.md)
 - [Computación Gráfica :D — playlist inventory](./evidence/V17-computacion-grafica-playlist-notes.md)

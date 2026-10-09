@@ -142,7 +142,7 @@ flowchart LR
 | 20 January 2020 | `gpk_samples` commit `3bb8876`: “Moved game PoC from CED repository” | This is a direct bridge: the experiment is promoted into a `gpk` application instead of remaining a disposable demo. |
 | 1 April 2021 | `gpk` commit `da6531c`: “Moved gpk_framework.* to llc” | The repository starts separating low-level/common facilities from higher-level application code. |
 | April 2022 | `telegram_camera` develops from concept to separated camera/bot integration | A compact Python service combines capture, sessions, bot control, video responses, logging and remote interaction. It remains a parallel application in this map. |
-| July-September 2022 | `rgb_tutorial` and `rgblib` | The `ced` rendering exercise is reimagined and reusable raster/window operations are promoted into a library. |
+| July-September 2022 | [`rgb_tutorial`](https://github.com/RGBVillain/rgb_tutorial) and [`rgblib`](https://github.com/RGBVillain/rgblib) | The `ced` rendering exercise is reimagined and reusable raster/window operations are promoted into a library. |
 | September 2022 | `gpk_games` begins with `galaxy_hell` | The game/application repository continues work that had lived in `gpk_samples`. |
 | December 2022-January 2023 | `the_one` code enters `gpk_games`; D3D11 support is cleaned, completed and promoted | The event and D3D11 work becomes the basis of the `gpk_engine` layer while `gpk_games` combines the `gpk_samples` and `the_one` branches. |
 | 17 October 2023 | Original firmware commit `28f55db` adds the `llc` dependency | The embedded product begins consuming the common layer directly. |

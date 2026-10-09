@@ -1,6 +1,6 @@
 # RGB / Computación Gráfica commit evidence
 
-Inspected from `D:\dev_extras\rgb\rgb.zip`, which contains two Git repositories: `rgb_tutorial` and `rgblib`. The archive was extracted under `D:\dev_extras\evidence\rgb-archive` for read-only inspection. Source counts include tracked `.cpp`, `.h`, `.c` and `.hpp` files and count physical lines, including comments and blanks.
+Originally inspected from an archive of the [`rgb_tutorial`](https://github.com/RGBVillain/rgb_tutorial) and [`rgblib`](https://github.com/RGBVillain/rgblib) Git histories. The measured snapshots correspond to commits `a74eb2b` and `0498405`, respectively. Source counts include tracked `.cpp`, `.h`, `.c` and `.hpp` files and count physical lines, including comments and blanks.
 
 ## `rgb_tutorial`
 

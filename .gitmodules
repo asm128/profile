@@ -1,6 +1,0 @@
-[submodule "evidence/rgb-archive/rgblib"]
-	path = evidence/rgb-archive/rgblib
-	url = https://github.com/rgbvillain/rgblib
-[submodule "evidence/rgb-archive/rgb_tutorial"]
-	path = evidence/rgb-archive/rgb_tutorial
-	url = https://github.com/rgbvillain/rgb_tutorial
