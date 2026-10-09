@@ -120,7 +120,16 @@ document.addEventListener("DOMContentLoaded", () => {
   cubeCanvas.height = 240;
   cubeCanvas.setAttribute("role", "img");
   cubeCanvas.setAttribute("aria-label", "Rotating WebGL cube with an animated circuit texture");
-  cubeFigure.append(cubeCanvas);
+  const cubeStats = element("figcaption", "cube-stats");
+  const cubeFps = element("span", "", "FPS —");
+  cubeFps.id = "cube-fps";
+  const cubeFrameTime = element("span", "", "Frame — ms");
+  cubeFrameTime.id = "cube-frame-time";
+  const cubeTooltip = element("span", "cube-tooltip", "FPS — · Frame — ms");
+  cubeTooltip.id = "cube-tooltip";
+  cubeTooltip.setAttribute("aria-hidden", "true");
+  cubeStats.append(cubeFps, cubeFrameTime);
+  cubeFigure.append(cubeCanvas, cubeStats, cubeTooltip);
   hero.append(cubeFigure);
   main.append(hero);
 

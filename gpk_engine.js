@@ -185,11 +185,139 @@ const gpkEngine = (() => {
     return geometry;
   }
 
+  class SRigidBodyIntegrator {
+    constructor() {
+      this.Frames = [];
+      this.Flags = [];
+      this.Masses = [];
+      this.Forces = [];
+      this.Centers = [];
+      this.BoundingVolumes = [];
+      this.TransformsLocal = [];
+    }
+    Create() {
+      const {mat3, mat4, quat, vec3} = glMatrix;
+      this.Frames.push({
+        InverseInertiaTensorWorld: mat3.create(),
+        LastFrameAcceleration: vec3.create(),
+        AccumulatedForce: vec3.create(),
+        AccumulatedTorque: vec3.create(),
+      });
+      this.Flags.push({BVType: 0, Collides: false, Active: false, Falling: false, UpdatedTransform: false, UpdatedTensorWorld: false});
+      this.Masses.push({LinearDamping: 1, AngularDamping: 1, InverseMass: 0, InverseAngularMassTensor: mat3.create()});
+      this.Forces.push({Velocity: vec3.create(), Acceleration: vec3.create(), Rotation: vec3.create()});
+      this.Centers.push({Position: vec3.create(), Orientation: quat.create()});
+      this.BoundingVolumes.push({HalfSizes: [.5, .5, .5]});
+      return this.TransformsLocal.push(mat4.create()) - 1;
+    }
+    Clone(id) {
+      this.Frames.push(copy(this.Frames[id]));
+      this.Flags.push(copy(this.Flags[id]));
+      this.Masses.push(copy(this.Masses[id]));
+      this.Forces.push(copy(this.Forces[id]));
+      this.Centers.push(copy(this.Centers[id]));
+      this.BoundingVolumes.push(copy(this.BoundingVolumes[id]));
+      return this.TransformsLocal.push(copy(this.TransformsLocal[id])) - 1;
+    }
+    GetTransform(id) {
+      const {mat3, mat4, quat} = glMatrix;
+      const flags = this.Flags[id];
+      const transform = this.TransformsLocal[id];
+      if(!flags.UpdatedTransform) {
+        const center = this.Centers[id];
+        quat.normalize(center.Orientation, center.Orientation);
+        mat4.fromRotationTranslation(transform, center.Orientation, center.Position);
+        flags.UpdatedTransform = true;
+        flags.UpdatedTensorWorld = false;
+      }
+      if(!flags.UpdatedTensorWorld) {
+        const rotation = mat3.fromMat4(mat3.create(), transform);
+        const inverseRotation = mat3.transpose(mat3.create(), rotation);
+        const tensor = mat3.multiply(mat3.create(), rotation, this.Masses[id].InverseAngularMassTensor);
+        mat3.multiply(this.Frames[id].InverseInertiaTensorWorld, tensor, inverseRotation);
+        flags.UpdatedTensorWorld = true;
+      }
+      return transform;
+    }
+    SetPosition(id, position) {
+      const center = this.Centers[id];
+      if(position.every((value, axis) => value === center.Position[axis])) return;
+      glMatrix.vec3.copy(center.Position, position);
+      this.Flags[id].UpdatedTransform = this.Flags[id].UpdatedTensorWorld = false;
+    }
+    SetOrientation(id, orientation) {
+      const center = this.Centers[id];
+      if(orientation.every((value, axis) => value === center.Orientation[axis])) return;
+      glMatrix.quat.copy(center.Orientation, orientation);
+      this.Flags[id].UpdatedTransform = this.Flags[id].UpdatedTensorWorld = false;
+    }
+    SetVelocity(id, velocity) {
+      glMatrix.vec3.copy(this.Forces[id].Velocity, velocity);
+      this.Flags[id].Active = true;
+      if(velocity[1]) this.Flags[id].Falling = true;
+    }
+    SetAcceleration(id, acceleration) {
+      glMatrix.vec3.copy(this.Forces[id].Acceleration, acceleration);
+      this.Flags[id].Active = true;
+    }
+    SetRotation(id, rotation) {
+      glMatrix.vec3.copy(this.Forces[id].Rotation, rotation);
+      this.Flags[id].Active = true;
+      if(rotation[0] || rotation[2]) this.Flags[id].Falling = true;
+    }
+    SetMass(id, mass) { this.Masses[id].InverseMass = 1 / mass; }
+    SetMassInverse(id, inverseMass) { this.Masses[id].InverseMass = inverseMass; }
+    SetHalfSizes(id, halfSizes) { this.BoundingVolumes[id].HalfSizes = copy(halfSizes); }
+    AddForce(id, force) { glMatrix.vec3.add(this.Frames[id].AccumulatedForce, this.Frames[id].AccumulatedForce, force); }
+    AddForceAtPoint(id, force, point) {
+      const {vec3} = glMatrix;
+      const frame = this.Frames[id];
+      const offset = vec3.subtract(vec3.create(), point, this.Centers[id].Position);
+      const torque = vec3.cross(vec3.create(), offset, force);
+      vec3.add(frame.AccumulatedTorque, frame.AccumulatedTorque, torque);
+      vec3.add(frame.AccumulatedForce, frame.AccumulatedForce, force);
+      this.Flags[id].Active = true;
+    }
+    Integrate(duration) {
+      if(!Number.isFinite(duration) || duration <= 0) return;
+      const {quat, vec3} = glMatrix;
+      for(let id = 0; id < this.Flags.length; ++id) {
+        const flags = this.Flags[id];
+        if(!flags.Active) continue;
+        this.GetTransform(id);
+        const frame = this.Frames[id];
+        const forces = this.Forces[id];
+        const mass = this.Masses[id];
+        const center = this.Centers[id];
+        vec3.scaleAndAdd(frame.LastFrameAcceleration, forces.Acceleration, frame.AccumulatedForce, mass.InverseMass);
+        vec3.scaleAndAdd(forces.Velocity, forces.Velocity, frame.LastFrameAcceleration, duration);
+        const angularAcceleration = vec3.transformMat3(vec3.create(), frame.AccumulatedTorque, frame.InverseInertiaTensorWorld);
+        vec3.scaleAndAdd(forces.Rotation, forces.Rotation, angularAcceleration, duration);
+        vec3.scale(forces.Velocity, forces.Velocity, Math.pow(mass.LinearDamping, duration));
+        vec3.scale(forces.Rotation, forces.Rotation, Math.pow(mass.AngularDamping, duration));
+        vec3.set(frame.AccumulatedForce, 0, 0, 0);
+        vec3.set(frame.AccumulatedTorque, 0, 0, 0);
+        vec3.scaleAndAdd(center.Position, center.Position, forces.Velocity, duration + duration * duration * .5);
+        const deltaRotation = quat.fromValues(forces.Rotation[0] * duration, forces.Rotation[1] * duration, forces.Rotation[2] * duration, 0);
+        quat.multiply(deltaRotation, deltaRotation, center.Orientation);
+        for(let axis = 0; axis < 4; ++axis) center.Orientation[axis] += deltaRotation[axis] * .5;
+        quat.normalize(center.Orientation, center.Orientation);
+        flags.UpdatedTransform = flags.UpdatedTensorWorld = false;
+        if(vec3.squaredLength(forces.Acceleration) < .001 && vec3.squaredLength(forces.Velocity) < .001 && vec3.squaredLength(forces.Rotation) < .00000001) {
+          flags.Active = false;
+          vec3.set(forces.Velocity, 0, 0, 0);
+          vec3.set(forces.Acceleration, 0, 0, 0);
+          vec3.set(forces.Rotation, 0, 0, 0);
+        }
+      }
+    }
+  }
+
   class SEngine {
     constructor() {
       this.Scene = new SEngineScene();
       this.Entities = new SVirtualEntityManager();
-      this.Integrator = {Bodies: []};
+      this.Integrator = new SRigidBodyIntegrator();
       this.ParamsBox = [];
     }
     GetRenderNode(idEntity) { return this.Entities.Entities[idEntity].RenderNode; }
@@ -197,7 +325,8 @@ const gpkEngine = (() => {
     CreateEntityFromGeometry(name, halfSizes, createSkin, params, cache, builder) {
       const idEntity = this.Entities.Create(name);
       const entity = this.Entities.Entities[idEntity];
-      entity.RigidBody = this.Integrator.Bodies.push({Position: [0,0,0], Orientation: [0,0,0,1], HalfSizes: copy(halfSizes)}) - 1;
+      entity.RigidBody = this.Integrator.Create();
+      this.Integrator.SetHalfSizes(entity.RigidBody, halfSizes);
       const cached = cache.find(entry => entry.Params.Origin.every((value, i) => value === params.Origin[i])
         && entry.Params.HalfSizes.every((value, i) => value === params.HalfSizes[i]));
       if(cached) entity.RenderNode = this.Scene.Clone(cached.RenderNode, true, true, true);
@@ -222,7 +351,7 @@ const gpkEngine = (() => {
       entity.RenderNode = source.RenderNode === EID_INVALID ? EID_INVALID
         : this.Scene.Clone(source.RenderNode, cloneSkin, cloneSurfaces, cloneShaders);
       entity.RigidBody = source.RigidBody === EID_INVALID ? EID_INVALID
-        : this.Integrator.Bodies.push(copy(this.Integrator.Bodies[source.RigidBody])) - 1;
+        : this.Integrator.Clone(source.RigidBody);
       entity.Parent = source.Parent;
       for(const idChild of this.Entities.Children[idSource]) {
         const idNewChild = this.Clone(idChild, cloneSkin, cloneSurfaces, cloneShaders);
@@ -231,16 +360,29 @@ const gpkEngine = (() => {
       }
       return idNew;
     }
-    SetPosition(idEntity, position) { this.Integrator.Bodies[this.GetRigidBody(idEntity)].Position = copy(position); }
-    SetOrientation(idEntity, orientation) { this.Integrator.Bodies[this.GetRigidBody(idEntity)].Orientation = copy(orientation); }
+    SetPosition(idEntity, position) { this.Integrator.SetPosition(this.GetRigidBody(idEntity), position); }
+    SetOrientation(idEntity, orientation) { this.Integrator.SetOrientation(this.GetRigidBody(idEntity), orientation); }
+    SetVelocity(idEntity, velocity) { this.Integrator.SetVelocity(this.GetRigidBody(idEntity), velocity); }
+    SetAcceleration(idEntity, acceleration) { this.Integrator.SetAcceleration(this.GetRigidBody(idEntity), acceleration); }
+    SetRotation(idEntity, rotation) { this.Integrator.SetRotation(this.GetRigidBody(idEntity), rotation); }
+    SetMass(idEntity, mass) { this.Integrator.SetMass(this.GetRigidBody(idEntity), mass); }
+    AddForceAtPoint(idEntity, force, point) { this.Integrator.AddForceAtPoint(this.GetRigidBody(idEntity), force, point); }
+    SetMeshPosition(idEntity, position) {
+      const node = this.GetRenderNode(idEntity);
+      glMatrix.mat4.fromTranslation(this.Scene.RenderNodes.BaseTransforms[node].Model, position);
+    }
     SetParent(idEntity, idParent) { this.Entities.SetParent(idEntity, idParent); }
+    Update(duration) {
+      this.Integrator.Integrate(duration);
+      this.UpdateTransforms();
+    }
     UpdateTransforms() {
       const {mat4} = glMatrix;
       const update = (idEntity, parentModel) => {
         const entity = this.Entities.Entities[idEntity];
-        const body = this.Integrator.Bodies[entity.RigidBody];
         const local = mat4.create();
-        if(body) mat4.fromRotationTranslation(local, body.Orientation, body.Position);
+        if(entity.RigidBody !== EID_INVALID)
+          mat4.copy(local, this.Integrator.GetTransform(entity.RigidBody));
         const model = mat4.create();
         if(parentModel) mat4.multiply(model, parentModel, local);
         else mat4.copy(model, local);
@@ -253,5 +395,5 @@ const gpkEngine = (() => {
     }
   }
 
-  return {EID_INVALID, SResourceManager, SVirtualEntityManager, SRenderNodeManager, SEngineGraphics, SEngineScene, SEngine, geometryBuildBox};
+  return {EID_INVALID, SResourceManager, SVirtualEntityManager, SRenderNodeManager, SEngineGraphics, SEngineScene, SRigidBodyIntegrator, SEngine, geometryBuildBox};
 })();

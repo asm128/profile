@@ -146,19 +146,40 @@ function createCubeProgram(gl) {
   return null;
 }
 
-function startCanvasFallback(canvas) {
+function createFrameStats() {
+  const fps = document.getElementById("cube-fps");
+  const frameTime = document.getElementById("cube-frame-time");
+  const tooltip = document.getElementById("cube-tooltip");
+  let previousFrame;
+  return now => {
+    if(previousFrame === undefined) {
+      previousFrame = now;
+      return;
+    }
+    const lastFrame = now - previousFrame;
+    previousFrame = now;
+    if(lastFrame <= 0)
+      return;
+    fps.textContent = `FPS ${(1000 / lastFrame).toFixed(2)}`;
+    frameTime.textContent = `Frame ${lastFrame.toFixed(2)} ms`;
+    tooltip.textContent = `${fps.textContent} · ${frameTime.textContent}`;
+  };
+}
+
+function startCanvasFallback(canvas, frameStats) {
   const context = canvas.getContext("2d");
   if(!context)
     return 0;
   const render = now => {
     drawCubeTexture(context, canvas.width, now * .001);
+    frameStats(now);
     requestAnimationFrame(render);
   };
   requestAnimationFrame(render);
   return 1;
 }
 
-function startCube(gl, canvas) {
+function startCube(gl, canvas, frameStats) {
   const engine = new gpkEngine.SEngine();
   const cube = engine.CreateBox({Origin: [1, 1, 1], HalfSizes: [1, 1, 1]}, "Logo cube");
   const scene = engine.Scene;
@@ -175,7 +196,8 @@ function startCube(gl, canvas) {
     vertices.set(uv.subarray(vertex * 2, vertex * 2 + 2), vertex * 5 + 3);
   }
   const skin = graphics.Skins.Elements[node.Skin];
-  const surface = graphics.Surfaces.Elements[skin.Textures[0]];
+  const sourceSurface = skin.Textures[0];
+  const surface = graphics.Surfaces.Elements[sourceSurface];
 
   const program = createCubeProgram(gl);
   if(!program)
@@ -209,34 +231,116 @@ function startCube(gl, canvas) {
   surface.Desc.Dimensions = [256, 256];
   surface.Data = new Uint8Array(textureContext.getImageData(0, 0, 256, 256).data.buffer);
 
-  const texture = gl.createTexture();
-  gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, texture);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 256, 0, gl.RGBA, gl.UNSIGNED_BYTE, surface.Data);
+  const gpuTextures = new Map();
+  let boundSurface = gpkEngine.EID_INVALID;
+  const bindSurface = id => {
+    if(boundSurface === id) return;
+    let texture = gpuTextures.get(id);
+    if(!texture) {
+      const source = graphics.Surfaces.Elements[id];
+      texture = gl.createTexture();
+      gpuTextures.set(id, texture);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, source.Desc.Dimensions[0], source.Desc.Dimensions[1], 0, gl.RGBA, gl.UNSIGNED_BYTE, source.Data);
+    }
+    else {
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+    }
+    boundSurface = id;
+  };
+  bindSurface(sourceSurface);
   gl.uniform1i(samplerLocation, 0);
 
   const {mat4, quat, vec3} = glMatrix;
   const projection = mat4.create();
+  const modelView = mat4.create();
   const orientation = quat.create();
   const rotationAxis = vec3.normalize(vec3.create(), [1, 1, 1]);
-  engine.SetPosition(cube, [0, 0, -6]);
+  engine.SetPosition(cube, [0, 0, -12]);
+  const explosion = new galaxyExplosion.SExplosion(engine, cube);
   mat4.perspective(projection, Math.PI / 4, canvas.width / canvas.height, .1, 100);
 
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.enable(gl.DEPTH_TEST);
   gl.depthFunc(gl.LESS);
+  gl.disable(gl.CULL_FACE);
+
+  const sourceNode = engine.GetRenderNode(cube);
+  const projected = new Float32Array(positions.length / 3 * 2);
+  const hitModel = mat4.create();
+  const hitTransform = mat4.create();
+  const hitVertex = vec3.create();
+  engine.UpdateTransforms();
+  const hitCube = (clientX, clientY) => {
+    if(explosion.Active || !Number.isFinite(clientX) || !Number.isFinite(clientY)) return false;
+    const bounds = canvas.getBoundingClientRect();
+    if(!bounds.width || !bounds.height) return false;
+    const x = (clientX - bounds.left) / bounds.width * 2 - 1;
+    const y = 1 - (clientY - bounds.top) / bounds.height * 2;
+    mat4.multiply(hitModel, scene.RenderNodes.Transforms[sourceNode].Model, scene.RenderNodes.BaseTransforms[sourceNode].Model);
+    mat4.multiply(hitTransform, projection, hitModel);
+    for(let index = 0; index < positions.length / 3; ++index) {
+      vec3.set(hitVertex, positions[index * 3], positions[index * 3 + 1], positions[index * 3 + 2]);
+      vec3.transformMat4(hitVertex, hitVertex, hitTransform);
+      projected[index * 2] = hitVertex[0];
+      projected[index * 2 + 1] = hitVertex[1];
+    }
+    for(let index = 0; index < indices.length; index += 3) {
+      const a = indices[index] * 2;
+      const b = indices[index + 1] * 2;
+      const c = indices[index + 2] * 2;
+      const ab = (x - projected[a]) * (projected[b + 1] - projected[a + 1]) - (y - projected[a + 1]) * (projected[b] - projected[a]);
+      const bc = (x - projected[b]) * (projected[c + 1] - projected[b + 1]) - (y - projected[b + 1]) * (projected[c] - projected[b]);
+      const ca = (x - projected[c]) * (projected[a + 1] - projected[c + 1]) - (y - projected[c + 1]) * (projected[a] - projected[c]);
+      if((ab >= 0 && bc >= 0 && ca >= 0) || (ab <= 0 && bc <= 0 && ca <= 0)) return true;
+    }
+    return false;
+  };
+
+  canvas.setAttribute("role", "button");
+  canvas.setAttribute("aria-label", "Explode the rotating 3D cube");
+  canvas.tabIndex = 0;
+  canvas.addEventListener("pointermove", event => {
+    canvas.style.cursor = hitCube(event.clientX, event.clientY) ? "pointer" : "default";
+  });
+  canvas.addEventListener("click", event => {
+    if(hitCube(event.clientX, event.clientY)) explosion.Start();
+  });
+  canvas.addEventListener("keydown", event => {
+    if(event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    explosion.Start();
+  });
+
+  const drawEntity = entity => {
+    const nodeId = engine.GetRenderNode(entity);
+    if(scene.RenderNodes.Flags[nodeId].NoDraw) return;
+    const renderNode = scene.RenderNodes.RenderNodes[nodeId];
+    const renderMesh = graphics.Meshes.Elements[renderNode.Mesh];
+    const renderSkin = graphics.Skins.Elements[renderNode.Skin];
+    bindSurface(renderSkin.Textures[0]);
+    mat4.multiply(modelView, scene.RenderNodes.Transforms[nodeId].Model, scene.RenderNodes.BaseTransforms[nodeId].Model);
+    gl.uniformMatrix4fv(modelViewLocation, false, modelView);
+    const slice = renderMesh.GeometrySlices[renderNode.Slice].Slice;
+    gl.drawElements(gl.TRIANGLES, slice[1], gl.UNSIGNED_SHORT, slice[0] * Uint16Array.BYTES_PER_ELEMENT);
+  };
 
   let textureTime = -1;
+  let lastRenderTime;
   const render = now => {
     const time = now * .001;
+    const duration = lastRenderTime === undefined ? 0 : Math.min(Math.max((now - lastRenderTime) * .001, 0), .05);
+    lastRenderTime = now;
     if(time - textureTime >= 1 / 30) {
       drawCubeTexture(textureContext, 256, time);
       surface.Data = new Uint8Array(textureContext.getImageData(0, 0, 256, 256).data.buffer);
-      gl.bindTexture(gl.TEXTURE_2D, texture);
+      bindSurface(sourceSurface);
       gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 256, 256, gl.RGBA, gl.UNSIGNED_BYTE, surface.Data);
       textureTime = time;
     }
@@ -245,10 +349,14 @@ function startCube(gl, canvas) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     quat.setAxisAngle(orientation, rotationAxis, time * .5);
     engine.SetOrientation(cube, orientation);
-    engine.UpdateTransforms();
-    gl.uniformMatrix4fv(modelViewLocation, false, scene.RenderNodes.Transforms[engine.GetRenderNode(cube)].Model);
+    engine.Update(duration);
+    explosion.Update(duration);
+    if(explosion.Active) engine.UpdateTransforms();
     gl.uniformMatrix4fv(projectionLocation, false, projection);
-    gl.drawElements(gl.TRIANGLES, mesh.GeometrySlices[node.Slice].Slice[1], gl.UNSIGNED_SHORT, 0);
+    drawEntity(cube);
+    for(const entity of explosion.Parts) drawEntity(entity);
+    for(const entity of explosion.Debris) drawEntity(entity);
+    frameStats(now);
     requestAnimationFrame(render);
   };
   requestAnimationFrame(render);
@@ -258,5 +366,6 @@ function startCube(gl, canvas) {
 function initLogo() {
   const canvas = document.getElementById("webgl-canvas");
   const gl = canvas.getContext("webgl");
-  return gl ? startCube(gl, canvas) : startCanvasFallback(canvas);
+  const frameStats = createFrameStats();
+  return gl ? startCube(gl, canvas, frameStats) : startCanvasFallback(canvas, frameStats);
 }
