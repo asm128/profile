@@ -31,14 +31,18 @@ const profileJSON = `{
     "label": "Recorded evidence",
     "title": "Work that can be inspected",
     "metrics": {
-      "20+ years": "Software development",
-      "693 commits": "Reviewed firmware history",
-      "8,986 lines": "Final firmware ecosystem reviewed",
-      "92 commits": "CED graphics prototype, Jan 8–31 2020",
-      "Measuring…": "This visit: navigation to profile DOM construction",
-      "Measuring render…": "This visit: profile DOM construction",
-      "Measuring size…": "Uncompressed homepage source",
-      "Comparing size…": "Than the 2025 median desktop home page"
+      "experience": {"value": "20+ years", "description": "Software development"},
+      "gpk": {"value": "1,277 commits", "description": "403 source files · 24 projects · 2018–2026", "source": "./evidence/repository-history.md"},
+      "gpk_samples": {"value": "333 commits", "description": "165 source files · 34 projects · 2018–2026", "source": "./evidence/repository-history.md"},
+      "gpk_games": {"value": "229 commits", "description": "106 source files · 20 projects · 2022–2026", "source": "./evidence/repository-history.md"},
+      "blitter": {"value": "122 commits", "description": "12 source files · 5 projects · 2019–2026", "source": "./evidence/repository-history.md"},
+      "llc": {"value": "91 commits", "description": "199 source files · 10 projects · 2024–2026", "source": "./evidence/repository-history.md"},
+      "firmware_commits": {"value": "693 commits", "description": "2 firmware histories · 2022–2024", "source": "./analysis/spaceai-firmware/README.md#measured-scope"},
+      "firmware_lines": {"value": "8,986 lines", "description": "81 source files · 5 components", "source": "./analysis/spaceai-firmware/README.md#measured-scope"},
+      "navigation_time": {"value": "Measuring…", "description": "Navigation start → profile DOM ready"},
+      "render_time": {"value": "Measuring render…", "description": "Profile JSON → rendered DOM"},
+      "source_size": {"value": "Measuring size…", "description": "Homepage source, uncompressed"},
+      "size_comparison": {"value": "Comparing size…", "description": "Versus 2,862 KB desktop median (2025)"}
     }
   },
   "studies": {
@@ -71,6 +75,7 @@ const profileJSON = `{
         "title": "Development evidence",
         "articles": {
           "Manual allocation and ownership audit": "./evidence/manual-allocation-audit.md",
+          "Repository history scope and counts": "./evidence/repository-history.md",
           "Homepage loading and rendering measurements": "./evidence/homepage-performance.md",
           "RGB commit evidence": "./evidence/rgb-commit-analysis.md",
           "RGB final code review": "./evidence/rgb-final-code-review.md",
@@ -86,10 +91,44 @@ const profileJSON = `{
 }`;
 
 const profile = JSON.parse(profileJSON);
+const homepageSourceSnapshot = {bytes: 109385.0, count: 8};
 
 const appendSectionHeading = (section, data) => {
   section.append(element("div", "label", data.label));
   section.append(element("h2", "", data.title));
+};
+
+const homepageSourceSize = async () => {
+  const normalizeURL = value => {
+    const result = new URL(value, document.baseURI);
+    result.hash = "";
+    return result.href;
+  };
+  const sourceURLs = new Set([normalizeURL(location.href)]);
+  for(const resource of document.querySelectorAll('link[rel~="stylesheet"][href], script[src]'))
+    sourceURLs.add(normalizeURL(resource.href || resource.src));
+  const measuredSizes = new Map();
+  const navigation = performance.getEntriesByType("navigation")[0];
+  const resources = performance.getEntriesByType("resource");
+  for(const entry of navigation ? [navigation, ...resources] : resources)
+    if(entry.decodedBodySize > 0)
+      measuredSizes.set(normalizeURL(entry.name), entry.decodedBodySize);
+  const missingURLs = [...sourceURLs].filter(url => !measuredSizes.has(url));
+  const responses = await Promise.all(missingURLs.map(url => fetch(url, {cache: "force-cache"})));
+  if(responses.some(response => !response.ok))
+    return;
+  const bodies = await Promise.all(responses.map(response => response.arrayBuffer()));
+  for(let iBody = 0; iBody < bodies.length; ++iBody)
+    measuredSizes.set(missingURLs[iBody], bodies[iBody].byteLength);
+  const bytes = [...sourceURLs].reduce((total, url) => total + measuredSizes.get(url), 0);
+  return {bytes, count: sourceURLs.size, live: true};
+};
+
+const formatSmallerPercentage = value => {
+  let decimals = 2;
+  while(100 <= Number(value.toFixed(decimals)))
+    ++decimals;
+  return value.toFixed(decimals);
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -150,12 +189,16 @@ document.addEventListener("DOMContentLoaded", () => {
   appendSectionHeading(evidence, profile.evidence);
   const metrics = element("div", "metrics");
   const metricValues = {};
-  for(const [value, description] of Object.entries(profile.evidence.metrics)) {
+  const metricDescriptions = {};
+  for(const [id, data] of Object.entries(profile.evidence.metrics)) {
     const metric = element("div", "metric");
-    const metricValue = element("strong", "", value);
-    metricValues[description] = metricValue;
-    metric.append(metricValue);
-    metric.append(element("span", "", description));
+    const metricValue = element("strong", "", data.value);
+    const metricDescription = data.source
+      ? link(data.description, data.source, "metric-source")
+      : element("span", "", data.description);
+    metricValues[id] = metricValue;
+    metricDescriptions[id] = metricDescription;
+    metric.append(metricValue, metricDescription);
     metrics.append(metric);
   }
   evidence.append(metrics);
@@ -187,23 +230,24 @@ document.addEventListener("DOMContentLoaded", () => {
   footer.append(link("Curriculum vitae", "./cv.html"));
 
   const renderFinished = performance.now();
-  metricValues["This visit: navigation to profile DOM construction"].textContent = `${renderFinished.toFixed(1)} ms`;
-  metricValues["This visit: profile DOM construction"].textContent = `${(renderFinished - renderStarted).toFixed(1)} ms`;
-  window.addEventListener("load", () => {
-    const navigation = performance.getEntriesByType("navigation")[0];
-    const resources = performance.getEntriesByType("resource");
-    const entries = navigation ? [navigation, ...resources] : [];
-    const sizeMetric = metricValues["Uncompressed homepage source"];
-    const comparisonMetric = metricValues["Than the 2025 median desktop home page"];
-    if(!entries.length || entries.some(entry => !(entry.decodedBodySize > 0))) {
-      sizeMetric.textContent = comparisonMetric.textContent = "Unavailable";
-      return;
+  metricValues.navigation_time.textContent = `${renderFinished.toFixed(2)} ms`;
+  metricValues.render_time.textContent = `${(renderFinished - renderStarted).toFixed(2)} ms`;
+  window.addEventListener("load", async () => {
+    const sizeMetric = metricValues.source_size;
+    const comparisonMetric = metricValues.size_comparison;
+    let source;
+    try {
+      source = await homepageSourceSize();
     }
-    // Decoded body sizes include cached resources and exclude HTTP compression.
-    const bytes = entries.reduce((total, entry) => total + entry.decodedBodySize, 0);
-    const difference = (1 - bytes / 2862000) * 100; // 2025 HTTP Archive desktop median, in bytes.
-    sizeMetric.textContent = `${(bytes / 1024).toFixed(1)} KiB`;
-    comparisonMetric.textContent = `${Math.abs(difference).toFixed(1)}% ${difference >= 0 ? "smaller" : "larger"}`;
+    catch {
+    }
+    if(!(source?.bytes > 0))
+      source = homepageSourceSnapshot;
+    const difference = (1.0 - source.bytes / 2862000.0) * 100.0; // 2025 HTTP Archive desktop median, in bytes.
+    const percentage = difference >= 0 ? formatSmallerPercentage(difference) : Math.abs(difference).toFixed(2);
+    sizeMetric.textContent = `${(source.bytes / 1024.0).toFixed(2)} KiB`;
+    metricDescriptions.source_size.textContent = `${source.count} ${source.live ? "same-origin" : "published"} source files, uncompressed`;
+    comparisonMetric.textContent = `${percentage}% ${difference >= 0 ? "smaller" : "larger"}`;
   }, {once: true});
   initLogo();
 });

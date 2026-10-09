@@ -107,6 +107,7 @@ p { margin-top: 0; }
 .metric { padding: 10px 14px; background: var(--background); }
 .metric strong { display: block; color: var(--evidence); font-size: 22px; }
 .metric span { color: var(--muted); font-size: 14px; }
+.metric-source { display: block; font-size: 14px; }
 .articles { columns: 3; column-gap: 36px; }
 .article-group { break-inside: avoid; margin-bottom: 16px; }
 .article-group h3 { color: var(--muted); font: 700 13px Consolas, monospace; text-transform: uppercase; }
