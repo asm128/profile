@@ -6,7 +6,7 @@
 - [1. Distinguish members from parameters and local variables through casing](#1-distinguish-members-from-parameters-and-local-variables-through-casing)
 - [2. Encode a name's role when that helps interpretation](#2-encode-a-names-role-when-that-helps-interpretation)
 - [3. Give related operations a consistent naming vocabulary](#3-give-related-operations-a-consistent-naming-vocabulary)
-- [4. Qualify library symbols explicitly](#4-qualify-library-symbols-explicitly)
+- [4. Qualify external symbols explicitly; keep same-namespace symbols local](#4-qualify-external-symbols-explicitly-keep-same-namespace-symbols-local)
 - [5. Align related code into columns](#5-align-related-code-into-columns)
 - [6. Keep parallel operations visually parallel](#6-keep-parallel-operations-visually-parallel)
 - [7. Keep trivial operations compact](#7-keep-trivial-operations-compact)
@@ -46,7 +46,7 @@ The recurring aim of these conventions is to reduce how much code a reader must 
 
 The conventions are most useful in combination. The comparisons below illustrate individual choices, while the case studies show how those choices interact in working code and runtime output. Structural improvements are distinguished from behavioral changes; no measured improvement in comprehension speed is claimed.
 
-This is a working description of the conventions observed in a sample of my C++ projects, refined through discussion. It describes preferences rather than universal requirements. Except for the original code reproduced in rule 26 and the supplied implementations and log excerpt in the case studies, the examples are illustrative and simplified; they are not verbatim extracts or standalone compilable programs. Each rule contrasts an alternative with the preferred approach. These are comparisons of styles and tradeoffs, not statistical claims about what most programmers do. Some alternatives are equally appropriate under different requirements.
+This is a working description of the conventions observed in a sample of my C++ projects, refined through discussion. It describes preferences rather than universal requirements. Except for the ILC editor captures in rule 7, the original code reproduced in rule 26 and the supplied implementations and log excerpt in the case studies, the examples are illustrative and simplified; they are not verbatim extracts or standalone compilable programs. Each rule contrasts an alternative with the preferred approach. These are comparisons of styles and tradeoffs, not statistical claims about what most programmers do. Some alternatives are equally appropriate under different requirements.
 
 The initial sample covered GOD, GFramework, NWOL, SLToolkit, GPK, LLC, the dryer application, MLC, and HDTree. GunZ and bundled third-party libraries were excluded as evidence of personal style. Unless explicitly confirmed below, the reasoning is an interpretation of the observed code.
 
@@ -124,26 +124,31 @@ updateScreenHome(app);
 handleControlHome(app, idControl);
 ```
 
-## 4. Qualify library symbols explicitly
+## 4. Qualify external symbols explicitly; keep same-namespace symbols local
 
-Spell out the namespace, frequently including the leading `::`. This makes a symbol's origin visible and reduces ambiguity among libraries with similar names.
+Spell out the namespace when referring to a symbol owned by another namespace, frequently including the leading `::`. This makes an external symbol's origin visible and reduces ambiguity among libraries with similar names. Inside a namespace, however, use the local name for types, functions and constants owned by that same namespace—especially in headers. Repeating the current namespace adds noise without adding ownership information and makes the header harder to scan.
 
 **Contrasting approach:**
 
 ```cpp
-using namespace gpk;
-using namespace dry;
-
-SGUI & gui = *app.Framework.GUI;
-updateScreenHome(app);
+namespace app
+{
+    ::gpk::SGUI & gui = *framework.GUI;
+    updateScreenHome(app);
+}
 ```
 
 **Preferred approach:**
 
 ```cpp
-::gpk::SGUI & gui = *app.Framework.GUI;
-::dry::updateScreenHome(app);
+namespace app
+{
+    ::gpk::SGUI & gui = *framework.GUI;
+    ::dry::updateScreenHome(app);
+}
 ```
+
+The `::gpk::` and `::dry::` qualifications identify symbols owned elsewhere. `updateScreenHome` is intentionally unqualified because it belongs to the surrounding `app` namespace. Apply the same rule to declarations in headers: `SWidget`, `setupWidget`, and `WIDGET_DEFAULT` stay local when they are defined in the current namespace; `::gpk::SGUI` remains qualified because it is external.
 
 ## 5. Align related code into columns
 
@@ -217,6 +222,22 @@ T *        end  ()       { return Data + Count; }
 ```
 
 Expand the body when it contains substantive logic that benefits from separate steps. Group similar short functions together and align their names, parameters, and bodies so their differences are visible at a glance. A trivial wrapper can sit immediately above the implementation it delegates to, letting the reader finish the wrapper before entering the longer operation.
+
+The working-tree source `llb/llt/ilc/ilc_main.cpp` supplies a concrete progression. These are successive editor captures, not build results. First, four one-statement ILC stubs occupy separate expanded bodies:
+
+![Four ILC stubs with each return expanded into its own body](./evidence/ilc-layout/ilc-stubs-1-expanded.png)
+
+*Expanded bodies spend most of the visible height on braces and single returns, obscuring the relationship among the four signatures.*
+
+![The same ILC stubs compressed into one-line bodies](./evidence/ilc-layout/ilc-stubs-2-compact.png)
+
+*Compact bodies bring the four operations into view together. The transport and role signatures can now be compared without scrolling.*
+
+![Aligned ILC stubs with parallel stream parameters](./evidence/ilc-layout/ilc-stubs-3-aligned.png)
+
+*The aligned form makes the architecture visible by shape: TCP and UDP take `Read` and `Write` plus role and endpoint; Host and Join consume only `Read` and `Write`. The longer `ilcConfigure` body below them keeps its separate steps.* Line breaks earn space when they expose such structure; expanding every trivial return does not. Layout carries semantic information, rather than merely decorating the code.
+
+The captures also show the classic-C safe-format boundary in `ilcConfigure`: calls use a fixed `"%s"` format and pass the message as data. This keeps later or external message text from becoming the format string. The local source path above identifies the example. At this review on October 8, 2026, that file was untracked in the LLT checkout, so the screenshots preserve these intermediate states without suggesting a published source revision or a successful build.
 
 ## 8. Prefer the shorter branch first when practical
 

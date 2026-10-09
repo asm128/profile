@@ -18,21 +18,6 @@ uniform sampler2D uSampler;
 void main() { gl_FragColor = texture2D(uSampler, vTextureCoord); }
 `;
 
-const cubeVertices = [
-  -1, -1,  1, 0, 0,   1, -1,  1, 1, 0,   1,  1,  1, 1, 1,  -1,  1,  1, 0, 1,
-  -1, -1, -1, 1, 0,   1, -1, -1, 0, 0,   1,  1, -1, 0, 1,  -1,  1, -1, 1, 1,
-   1,  1,  1, 0, 0,  -1,  1,  1, 1, 0,  -1,  1, -1, 1, 1,   1,  1, -1, 0, 1,
-  -1, -1,  1, 0, 0,   1, -1,  1, 1, 0,   1, -1, -1, 1, 1,  -1, -1, -1, 0, 1,
-   1, -1,  1, 0, 0,   1, -1, -1, 1, 0,   1,  1, -1, 1, 1,   1,  1,  1, 0, 1,
-  -1, -1, -1, 0, 0,  -1, -1,  1, 1, 0,  -1,  1,  1, 1, 1,  -1,  1, -1, 0, 1,
-];
-
-const cubeIndices = [
-  0, 1, 2, 0, 2, 3,       4, 5, 6, 4, 6, 7,
-  0, 4, 7, 0, 7, 3,       1, 5, 6, 1, 6, 2,
-  3, 2, 6, 3, 6, 7,       0, 1, 5, 0, 5, 4,
-];
-
 const circuitPaths = [
   [[18, 48], [92, 48], [92, 102], [119, 102]],
   [[18, 208], [72, 208], [72, 154], [119, 154]],
@@ -174,6 +159,24 @@ function startCanvasFallback(canvas) {
 }
 
 function startCube(gl, canvas) {
+  const engine = new gpkEngine.SEngine();
+  const cube = engine.CreateBox({Origin: [1, 1, 1], HalfSizes: [1, 1, 1]}, "Logo cube");
+  const scene = engine.Scene;
+  const graphics = scene.Graphics;
+  const node = scene.RenderNodes.RenderNodes[engine.GetRenderNode(cube)];
+  const mesh = graphics.Meshes.Elements[node.Mesh];
+  const [indicesId, positionsId, , uvId] = mesh.GeometryBuffers;
+  const indices = graphics.Buffers.Elements[indicesId].Data;
+  const positions = graphics.Buffers.Elements[positionsId].Data;
+  const uv = graphics.Buffers.Elements[uvId].Data;
+  const vertices = new Float32Array(positions.length / 3 * 5);
+  for(let vertex = 0; vertex < positions.length / 3; ++vertex) {
+    vertices.set(positions.subarray(vertex * 3, vertex * 3 + 3), vertex * 5);
+    vertices.set(uv.subarray(vertex * 2, vertex * 2 + 2), vertex * 5 + 3);
+  }
+  const skin = graphics.Skins.Elements[node.Skin];
+  const surface = graphics.Surfaces.Elements[skin.Textures[0]];
+
   const program = createCubeProgram(gl);
   if(!program)
     return 0;
@@ -181,11 +184,11 @@ function startCube(gl, canvas) {
 
   const indexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cubeIndices), gl.STATIC_DRAW);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
 
   const vertexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cubeVertices), gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
   const positionLocation = gl.getAttribLocation(program, "aVertexPosition");
   gl.enableVertexAttribArray(positionLocation);
@@ -203,6 +206,8 @@ function startCube(gl, canvas) {
   textureCanvas.width = textureCanvas.height = 256;
   const textureContext = textureCanvas.getContext("2d");
   drawCubeTexture(textureContext, 256, 0);
+  surface.Desc.Dimensions = [256, 256];
+  surface.Data = new Uint8Array(textureContext.getImageData(0, 0, 256, 256).data.buffer);
 
   const texture = gl.createTexture();
   gl.activeTexture(gl.TEXTURE0);
@@ -211,12 +216,14 @@ function startCube(gl, canvas) {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textureCanvas);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 256, 0, gl.RGBA, gl.UNSIGNED_BYTE, surface.Data);
   gl.uniform1i(samplerLocation, 0);
 
-  const {mat4} = glMatrix;
+  const {mat4, quat, vec3} = glMatrix;
   const projection = mat4.create();
-  const modelView = mat4.create();
+  const orientation = quat.create();
+  const rotationAxis = vec3.normalize(vec3.create(), [1, 1, 1]);
+  engine.SetPosition(cube, [0, 0, -6]);
   mat4.perspective(projection, Math.PI / 4, canvas.width / canvas.height, .1, 100);
 
   gl.viewport(0, 0, canvas.width, canvas.height);
@@ -228,19 +235,20 @@ function startCube(gl, canvas) {
     const time = now * .001;
     if(time - textureTime >= 1 / 30) {
       drawCubeTexture(textureContext, 256, time);
+      surface.Data = new Uint8Array(textureContext.getImageData(0, 0, 256, 256).data.buffer);
       gl.bindTexture(gl.TEXTURE_2D, texture);
-      gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, textureCanvas);
+      gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 256, 256, gl.RGBA, gl.UNSIGNED_BYTE, surface.Data);
       textureTime = time;
     }
 
     gl.clearColor(.043, .055, .071, 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    mat4.identity(modelView);
-    mat4.translate(modelView, modelView, [0, 0, -6]);
-    mat4.rotate(modelView, modelView, time * .5, [1, 1, 1]);
-    gl.uniformMatrix4fv(modelViewLocation, false, modelView);
+    quat.setAxisAngle(orientation, rotationAxis, time * .5);
+    engine.SetOrientation(cube, orientation);
+    engine.UpdateTransforms();
+    gl.uniformMatrix4fv(modelViewLocation, false, scene.RenderNodes.Transforms[engine.GetRenderNode(cube)].Model);
     gl.uniformMatrix4fv(projectionLocation, false, projection);
-    gl.drawElements(gl.TRIANGLES, cubeIndices.length, gl.UNSIGNED_SHORT, 0);
+    gl.drawElements(gl.TRIANGLES, mesh.GeometrySlices[node.Slice].Slice[1], gl.UNSIGNED_SHORT, 0);
     requestAnimationFrame(render);
   };
   requestAnimationFrame(render);
