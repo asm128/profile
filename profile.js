@@ -39,14 +39,11 @@ const profileJSON = `{
   },
   "evidence": {
     "label": "Recorded evidence",
-    "title": "Repository history",
+    "title": "Selected codebases",
     "repositories": {
-      "gpk": {"label": "GPK", "value": "1,277 commits / 46,911 LoC", "description": "403 source files · 24 projects · 2018–2026", "source": "./evidence/repository-history.md"},
-      "gpk_samples": {"label": "GPK samples", "value": "333 commits / 27,603 LoC", "description": "165 source files · 34 projects · 2018–2026", "source": "./evidence/repository-history.md"},
-      "gpk_games": {"label": "GPK games", "value": "229 commits / 14,746 LoC", "description": "106 source files · 20 projects · 2022–2026", "source": "./evidence/repository-history.md"},
-      "blitter": {"label": "Blitter", "value": "122 commits / 1,859 LoC", "description": "12 source files · 5 projects · 2019–2026", "source": "./evidence/repository-history.md"},
-      "llc": {"label": "LLC", "value": "91 commits / 25,553 LoC", "description": "199 source files · 10 projects · 2024–2026", "source": "./evidence/repository-history.md"},
-      "firmware": {"label": "SpaceAI firmware", "value": "693 commits / 8,986 LoC", "description": "2 histories · 81 source files · 5 components · 2022–2024", "source": "./analysis/spaceai-firmware/README.md#measured-scope"}
+      "framework": {"label": "High-performance framework", "value": "1,277 commits / 46,911 LoC", "description": "403 source files · 24 projects · 2018–2026", "source": "./evidence/repository-history.md"},
+      "persistent_data": {"label": "Persistent data system", "value": "122 commits / 1,859 LoC", "description": "12 source files · 5 projects · 2019–2026", "source": "./evidence/repository-history.md"},
+      "firmware": {"label": "Firmware codebase", "value": "693 commits / 8,986 LoC", "description": "2 histories · 81 source files · 5 components · 2022–2024", "source": "./analysis/spaceai-firmware/README.md#measured-scope"}
     }
   },
   "studies": {
@@ -66,7 +63,7 @@ const profileJSON = `{
       {
         "title": "Architecture and evolution",
         "articles": {
-          "SpaceAI firmware system analysis": "./analysis/spaceai-firmware/README.md",
+          "Firmware system analysis": "./analysis/spaceai-firmware/README.md",
           "System evolution": "./analysis/spaceai-firmware/system-evolution.md",
           "Final system inventory": "./analysis/spaceai-firmware/final-system-inventory.md",
           "Settings and remote management": "./analysis/spaceai-firmware/settings-and-remote-management.md",
@@ -86,8 +83,8 @@ const profileJSON = `{
           "Graphics 101 transcript notes": "./evidence/T03-graphics-101-02-extracted-notes.md",
           "Native Windows API video notes": "./evidence/T04-windows-api-extracted-notes.md",
           "Computación Gráfica playlist inventory": "./evidence/V17-computacion-grafica-playlist-notes.md",
-          "Firmware Main SpaceAI history": "./evidence/firmware-main-spaceai-log-review.md",
-          "FirmwareWorks continuation": "./evidence/firmwareworks-log-review.md"
+          "Original firmware history": "./evidence/firmware-main-spaceai-log-review.md",
+          "Firmware workspace continuation": "./evidence/firmwareworks-log-review.md"
         }
       }
     ]
