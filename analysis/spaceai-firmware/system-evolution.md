@@ -1,5 +1,7 @@
 # Evolution of the SpaceAI firmware system
 
+This history follows one architectural transformation: a conventional ESP32 application became an operational device platform. The path was cumulative and source-visible—constants became typed settings; settings became local and remote control; build output acquired identity; fleet reports drove per-device changes; and OTA gained a recovery loop that remembered and suppressed failed images.
+
 ## 1. Initial firmware: November 2022 to mid-2023
 
 The repository began as a conventional embedded application. Features and device-specific behavior accumulated in the main firmware: sensors, networking, storage, LoRa, satellite communications and board-specific logic. At this stage, settings existed, but much behavior still depended on application code and fixed assumptions.
@@ -81,7 +83,9 @@ select hardware/profile
     -> device reports settings and state
     -> backend returns setting differences or newer firmware
     -> device installs and reboots
-    -> device confirms operation or rolls back
+        -> success: continue on the new image
+        -> failure: remember filename and restore the previous partition
+            -> backend suppresses the failed image for that device
 ```
 
-The repository history therefore describes three distinct evolutions at once: application features became modules; constants became remotely manageable settings; and a single firmware build became a repeatable deployment and fleet-management system.
+The repository history therefore describes three connected evolutions: application features became modules; constants became a shared local-and-remote control plane; and one firmware build became a traceable, recoverable fleet deployment system.

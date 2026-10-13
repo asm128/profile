@@ -1,8 +1,22 @@
-# Settings and remote management
+# One settings model from device to fleet
 
-## Scale and organization
+## The control plane
 
-Up to 176 serialized names appear in the final settings schema code. That count includes build metadata, SDR task fields and several disabled/commented fields, so it is a measure of schema surface rather than the exact number present in every build.
+The settings system is not an appendix to the firmware. It is the path through which product variation, local administration, persistence, remote management, build identity and deployment meet.
+
+```text
+selected profile
+    -> filesystem image and embedded build identity
+    -> typed hardware and software settings
+        -> intended configuration
+        -> active runtime state
+        -> generated local forms and JSON
+        -> persistent settings files
+        -> remote settings and state reports
+            -> fleet default or MAC-specific desired state
+            -> changed-value response
+            -> firmware selection and rollback suppression
+```
 
 The active structure is divided into hardware and software groups:
 
@@ -26,6 +40,8 @@ The active structure is divided into hardware and software groups:
 
 `SettingsHardware` and `SettingsSoftware` inherit the relevant group implementations. Feature flags remove unavailable groups from reduced firmware builds. This gives the mini firmware a smaller surface without requiring a separate settings architecture.
 
+As supporting scale evidence, up to 176 serialized names appear in the reviewed schema code. That count includes build metadata, SDR task fields and disabled or commented fields, so it describes the schema surface rather than the exact contents of every build. The operational result matters more than the count: one definition can affect hardware policy, storage, the local interface, remote comparison and deployment identity.
+
 ## Serialization and compatibility
 
 Every group implements `Save()` and `Load()` through the same typed overloads. Integers, floating-point values, strings, IP addresses and geographic bounds have explicit conversion paths. The current serializer emits nested groups; the loader first looks for the nested group and falls back to the parent object. That fallback preserves compatibility with older flat settings files during the migration.
@@ -39,15 +55,19 @@ getState()    = active state and initialization outcomes
 
 At startup, runtime state is copied from settings. If a device fails to initialize, the state can record it as unavailable without corrupting the configured intention. This distinction is especially useful for intermittent hardware and remotely managed installations.
 
-## Build profiles
+## One mechanism, three entry points
 
-The final folder contains 14 settings JSON files for device/person/site variants. `platformio.ini` defines ten active build environments and retains several older optional environments as commented configurations. Examples include generic ESP32, ESP32-S3, cold-chain, bracelet, drone and mini variants.
+The same grouped `Save()` and `Load()` paths cross all three entry points. A value selected before compilation, changed through the device interface or returned by the fleet service reaches the same typed owner and the same persistence path.
+
+### 1. Build profiles
+
+The reviewed snapshot contains 14 settings JSON files for device/person/site variants. Its `platformio.ini` defines ten active build environments and retains several older optional environments as commented configurations. Examples include generic ESP32, ESP32-S3, cold-chain, bracelet, drone and mini variants.
 
 The build script reads `settings_filename` from the selected environment, copies that file into the SPIFFS image, and embeds its name in the build metadata. Consequently, a binary can report both the exact Git revision and the settings profile from which it was produced.
 
 This is what turns runtime GPIO and device configuration into a manufacturing/deployment capability: one codebase can target different boards and installations while still producing traceable artifacts.
 
-## Local settings interface
+### 2. Local administration
 
 The device provides three routes for each enabled group:
 
@@ -59,7 +79,7 @@ POST /save/<group>  -> type-aware update and persistence
 
 The JavaScript UI obtains the JSON, determines suitable controls and handles special values such as IP-address components and passwords. The C++ endpoint reconstructs typed values, loads them into the settings object and saves the complete file. Some groups mark the device for restart because their hardware cannot safely be reconfigured in place.
 
-## Remote synchronization
+### 3. Fleet administration
 
 At its configured interval, the device writes an `active_settings.json` document containing grouped settings and build identity. It then POSTs several documents to `saimon`, including normal SPIFFS settings, sleep settings, active settings and active state.
 
@@ -74,11 +94,15 @@ The MAC-specific version wins; the global version is the fallback. The server fl
 
 This minimizes traffic and flash writes, while allowing fleet defaults and one-device exceptions to coexist.
 
-## History, time and firmware updates
+## Recoverable deployment closes the loop
 
 When a report changes, `saimon` stores the current version and a timestamped record of the differences. It does not create a new file for an identical report. Active settings can also cause the server to return its current Unix time, allowing clock correction when device metadata shows that the local clock predates the build.
 
-Firmware filenames encode UTC build time, so ordinary lexical sorting selects the newest image. A device reports its current build filename and profile; `saimon` returns a newer applicable binary. Mini firmware receives special handling. If the device rolls back, it reports `rollback_from`, and the server removes that filename from consideration so the same failed image is not immediately installed again.
+Firmware filenames encode UTC build time, so ordinary lexical sorting selects the newest image. A device reports its current build filename and profile; `saimon` returns a newer applicable binary. Mini firmware receives special handling.
+
+The decisive behavior begins when an image fails. A panic or watchdog reset causes the firmware to store the current build filename in `rollback_from`, save the setting and activate the previous partition. The next active-state report carries that filename to `saimon`. Before choosing an update, the service removes `rollback_from` from the candidate list. The unit therefore does not reinstall the image it just rejected.
+
+OTA delivers a file. This feedback loop makes deployment recoverable.
 
 ## Resulting economic effect
 
@@ -92,12 +116,10 @@ The settings architecture removes several recurring costs:
 - The local UI and remote service use the same serialization rules as the firmware.
 - Optional feature groups allow one architecture to serve small and fully featured builds.
 
-This is the point at which the project stopped being merely configurable firmware and became an operational device platform.
+This is where the project stopped being firmware with options.
+
+It became an operational device platform.
 
 ## Relationship to the packet endpoint
 
 The configurable datalog section flags directly affect the binary protocol consumed by `nio_packet_endpoint`. Enabling GPS, IMU or ADS sections changes which tagged records the firmware appends, while the endpoint dispatches each tag to the corresponding typed decoder. This shows that settings control both sensor work on the device and the shape and transmission cost of its telemetry.
-
-## Publication note
-
-Some archived settings profiles contain authentication material. Values were intentionally omitted from this analysis. Before publishing or sharing the source archive, remove those values from current files and history and rotate any credential that may still be valid.

@@ -1,4 +1,8 @@
-# Why use this architecture instead of React, Unreal, Unity or Godot?
+# Application-owned architecture versus framework-owned applications
+
+This is not the SpaceAI firmware case study.
+
+SpaceAI proves one narrow point here: typed application state generated the administration interface without creating a second frontend authority. The React comparison stops there. Unreal, Unity and Godot concern application ownership across other domains. They do not get to hijack the firmware story.
 
 ## The central distinction: the application owns the architecture
 
@@ -309,11 +313,9 @@ This arrangement prevents engine adoption from becoming data capture. The same s
 
 ## Much of the custom-foundation cost has already been paid
 
-For someone starting one conventional game today, writing an engine, containers, rendering, platform layers and tools would usually cost more than selecting an existing engine.
+This archive is not starting from zero. The infrastructure cost was distributed across ROPP, GPFTW, NWOL, GPK, CED, Galaxy Hell, `the_one`, the firmware projects and many intermediate experiments. Each project exposed another recurring problem and promoted proven machinery into a reusable layer.
 
-That is not the position represented by this archive. The infrastructure cost was distributed across ROPP, GPFTW, NWOL, GPK, CED, Galaxy Hell, `the_one`, the firmware projects and many intermediate experiments. Each project exposed another recurring problem and promoted proven machinery into a reusable layer.
-
-Adopting a framework now can introduce a second foundation:
+Adopting a framework now introduces a second foundation:
 
 ```text
 application state
@@ -324,7 +326,7 @@ application state
     -> application operations
 ```
 
-For a conventional application that translation may be cheap and the supplied tooling may repay it immediately. In these projects, which repeatedly cross domain boundaries and use unusual representations, the translation itself can cost more than the feature.
+These projects repeatedly cross domain boundaries and use representations shaped by their actual problems. Translating them into a second ownership, lifecycle and serialization system can cost more than the feature.
 
 ## The observed prototype speed is already high
 
@@ -474,29 +476,12 @@ Engine plugin ecosystems create the same category of responsibility even when th
 
 A small owned stack does not eliminate security defects. It changes the audit problem. There are fewer components, more of their behavior is known, and external code is added because a specific capability justifies its lifetime cost. This is compatible with the include and dependency rules observed elsewhere in the archive: depend on the lowest sufficient layer, keep public headers narrow, and avoid importing capabilities merely because they are available.
 
-## How to demonstrate the difference
-
-The advantage should be measured rather than assumed. A useful comparison would implement the same small but representative feature in this stack and in one relevant framework, then record:
-
-- Feature lead time.
-- Clean and incremental build time.
-- Binary, flash or download size.
-- Cold-start time.
-- Peak and steady-state memory.
-- Allocations per frame or request.
-- Direct and transitive dependency count.
-- Number of files and modules changed.
-- Time required to locate and correct an injected failure.
-- Time required for a second behavioral change after the initial implementation.
-- Time required to add a headless or alternate-platform form.
-- Percentage of implementation reused in another product.
-- Tool, editor, build-service and migration costs.
-- Onboarding time for another programmer.
-
-The maintenance change is essential, but the initial result must be measured too rather than awarded to the framework by assumption. A framework can be fast when the required result already matches its supplied machinery. The `ced` record shows that direct code can also reach visible results within hours while building reusable facilities at the same time. Repeated unusual changes, constrained targets and cross-domain reuse then test whether that early speed survives the rest of the product's life.
-
 ## Conclusion
 
-The architecture is preferable when direct representation, explicit execution, interoperability and reusable low-level facilities are worth more than a framework's editor, ecosystem and ready-made systems. Its value is not minimal code for its own sake. Its value is reducing the representations, ownership systems, lifecycle rules, dependency closures and trust boundaries that must be understood and maintained throughout the product's life.
+The evidence here favors direct representation, explicit execution, interoperability and reusable low-level facilities. Its value is not minimal code for its own sake. Its value is reducing the representations, ownership systems, lifecycle rules, dependency closures and trust boundaries that must be understood and maintained throughout the product's life.
 
-Its strongest property may be that adopting it does not forbid later use of React, Unreal, Unity or Godot. Independent C and C++ facilities can be wrapped for any of them while continuing to serve firmware, tools and servers. Choosing one of the frameworks as the foundation makes movement in the opposite direction substantially more expensive. The architecture preserves options instead of spending them in advance.
+Independent C and C++ facilities remain usable by firmware, tools, servers, ordinary executables and narrow adapters. Once a framework becomes the source of truth, moving in the opposite direction means recovering the product's meaning from its object model, lifecycle and derived assets.
+
+Application-owned state preserves options.
+
+Framework-owned state spends them in advance.
