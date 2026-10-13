@@ -4,7 +4,7 @@ A test run can say “3,177,407 checks passed” and still tell us very little. 
 
 The interesting property of `llc_test_core` is therefore not its check count. It is the structure behind each count: a stable named contract, a concrete counterexample, an explicit continuation boundary, and—where rejection is part of the API—a proof that the rejected operation did not damage the caller's state.
 
-LLC did not acquire that structure by building a parallel test vocabulary. It composed facilities the library already owned: signed results, source-aware diagnostics, enum metadata, templates, views, containers, timers and deterministic generation. This article follows that composition from scalar and container contracts through ownership, GUI, application-runtime and dynamic-module boundaries, then states exactly what the resulting system still does not provide.
+LLC did not acquire that structure by building a parallel test vocabulary. It composed facilities the library already owned: signed results, source-aware diagnostics, enum metadata, templates, views, containers, timers and deterministic generation. This article follows that composition from scalar and container contracts through ownership, GUI, application-runtime and dynamic-module boundaries.
 
 ## The current test surface
 
@@ -142,16 +142,6 @@ That SQLite evidence cannot be divided into LLC's 15,306 physical lines to produ
 | Coverage, fuzzing and fault-injection campaigns | Separate verification work | Add them for a concrete subsystem and threat model, not to imitate another project's harness inventory |
 
 The comparison does not show that LLC recreated every mature testing facility in fewer lines. It shows something narrower and sharper: for LLC's present contracts, existing library mechanisms already provide typed multiplication, deterministic generated cases, stable diagnostics, aggregation, lifecycle integration, suite selection and seed control without another dependency. The two alleged command-line advantages were conveniences, not a moat.
-
-## What is deliberately outside the runner
-
-The test core favors concentrated execution and direct diagnostics. It collects every safe logical failure and groups repeated result categories without hiding their individual logs. It reports 57 timed contract suites rather than manufacturing thousands of independently registered objects from loop iterations.
-
-The fallback random seeds make the normal run reproducible; a seed override explores a different deterministic set. Coverage guidance, corpus mutation and preservation of newly discovered hostile inputs belong to fuzzing campaigns. They should be introduced around a specific parser or state machine, not pushed into every deterministic contract test.
-
-The harness deliberately uses the library's dynamic result array, enum metadata, logging, timing and signed-result convention. That is self-hosting, not dependence on a supposedly neutral alternative: every runner rests on some compiler, runtime, allocator and reporting path. LLC keeps the bootstrap boundary visible by returning machinery failures separately from recorded logical failures.
-
-Expected-exception checks are Windows-conditioned because LLC's target policy throws on Windows and deliberately uses fatal behavior on targets where exceptions are not the contract. That is a platform failure policy, not a missing test-framework feature.
 
 ## The actual unusual result
 
