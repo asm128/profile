@@ -128,10 +128,6 @@ The comparison should not duck the conclusion. Suite selection and command-line 
 
 The mature frameworks still carry a mountain of used digital toilet paper around conveniences like these: registration machinery, configuration surfaces, compatibility contracts, reporting formats and runner protocols. Some of that machinery is useful. It does not make the underlying tests better. It makes the runner more furnished, more expensive to sustain and harder to discard.
 
-[SQLite publishes its own testing figures](https://www.sqlite.org/testing.html): for version 3.42.0 it reports about 155.8 KSLOC of library code and 92,053.1 KSLOC of test code and scripts, explicitly defining SLOC as excluding blank lines and comments. It also documents four independent harnesses, branch coverage, out-of-memory and I/O failure testing, crash and power-loss testing, fuzzing and millions of parameterized instances. Those are product-scale verification campaigns for a database engine, not features missing from LLC's contract runner.
-
-That SQLite evidence cannot be divided into LLC's 15,306 physical lines to produce a meaningful productivity ratio. The units differ, the inclusion policies differ and the products solve different problems. No primary source establishing one stable current total under that same definition was produced here for RocksDB, Rust or Chromium, so order-of-magnitude claims about them do not belong in this case study. Their repository sizes would not prove that they cover more or less of LLC's contract profile anyway.
-
 | External facility | LLC position | Engineering consequence |
 | --- | --- | --- |
 | Typed and value-parameter registration | Function templates, explicit type families, boundary tables and ordinary loops | The contract is multiplied without a second registration vocabulary |

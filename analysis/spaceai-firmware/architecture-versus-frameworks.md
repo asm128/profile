@@ -441,30 +441,6 @@ React can perform those operations, but it introduces a client component model, 
 
 Likewise, a game with a custom renderer, procedural geometry and thousands of simple projectiles may benefit more from arrays and direct processing passes than from an editor-centered scene object for every concept.
 
-This does not mean that these engines perform every operation inefficiently. It means that their generality has a cost, and a project should pay it only when the facilities it purchases are valuable to that project.
-
-## What the established frameworks buy
-
-The established frameworks supply capabilities that can reduce the initial cost of projects which match their assumptions. That is a purchase and a tradeoff, rather than an architectural victory. This architecture transfers responsibility to its author; the transfer is valuable when the author can carry it more economically than the framework and its surrounding ecosystem.
-
-- **React** is likely cheaper for a conventional business web application needing mature accessible components, numerous existing integrations and a large pool of frontend developers.
-- **Unreal** is likely cheaper for a content-heavy 3D production requiring sophisticated animation, cinematic editing, asset streaming, artist tooling, established multiplayer facilities and broad platform support.
-- **Unity** is attractive for editor-driven cross-platform games when its packages, deployment support and available developers fit the product.
-- **Godot** is attractive when a team wants an open, relatively lightweight editor and scene system without first building platform, rendering and content-authoring tools.
-
-Those advantages can be decisive for a particular product. They do not remove the runtime, dependency, integration and migration costs paid in exchange, and they do not make framework-bound code as reusable as code that remains independent of the host.
-
-The library-centered approach is strongest when:
-
-- The product crosses several domains or platforms.
-- Its data does not naturally fit an engine's object hierarchy.
-- Memory, representation and scheduling matter.
-- Runtime configuration must replace build variants.
-- Headless and embedded uses are important.
-- The same facilities will be reused in future products.
-- A small technical team owns most of the stack.
-- Long-term dependency and migration costs matter more than initial familiarity.
-
 ## The financial reason
 
 The choice determines where costs accumulate:

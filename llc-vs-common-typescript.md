@@ -102,7 +102,7 @@ Its usefulness on failure depends on information supplied elsewhere: the test na
 
 LLC's test checks are also compact, but they reuse production diagnostics and project reflection. A result can preserve a private enum identity, numeric value, name, description, source location, actual values, success count and failure count. Templates then apply the same behavioral contract across integer widths without creating a parallel testing vocabulary.
 
-The source is dense because it contains leverage. One written invariant may execute against several types, boundary tables and deterministic generated values. The final test program currently performs more than 150,000 checks in about a second while reporting which suites ran, how many checks each executed and what every failure category means.
+The source is dense because it contains leverage. One written invariant may execute against several types, boundary tables and deterministic generated values. The current measured test surface is recorded in [When library diagnostics become a test framework](./when-library-diagnostics-become-a-test-framework.md).
 
 That is different from shortening a test by omitting context. The notation becomes smaller because shared machinery carries the context consistently, not because the context disappeared.
 
