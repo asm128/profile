@@ -336,34 +336,34 @@ The most defensible description is:
 
 ## Sources reviewed
 
-- `D:/dev_extras/asm128/gpftw`
-- `D:/dev_extras/Repos_2015_12_15/Jesus/GFramework`
-- `D:/dev_extras/Repos_2015_12_15/Jesus/GODS`
-- `D:/dev_extras/Repos_2015_12_15/ROPP`
-- `D:/dev_extras/Repos_2015_12_15/Jesus/CloneCraft`
-- `D:/dev_extras/Repos_2015_12_15/Jesus/GDemos/shootemup`
-- `D:/dev_extras/asm128/nwol`
-- `D:/dev_extras/asm128/kitsurpg`
-- `D:/dev_extras/asm128/battleground`
-- `D:/dev_extras/asm128/ced`
-- `D:/dev_extras/rgb`
-- `D:/dev_extras/asm128/gpk`
-- `D:/dev_extras/asm128/gpk_samples/ced_game`
-- `D:/dev_extras/asm128/the_one`
-- `D:/dev_extras/asm128/gpk_games`
-- `D:/dev_extras/asm128/llc`
-- `D:/dev_extras/asm128/blitter`
-- `D:/dev_extras/asm128/blitdb`
-- `D:/dev_extras/asm128/demo`
-- `D:/dev_extras/asm128/neutralizer`
-- `D:/dev_extras/sexybaires`
-- `D:/dev_extras/tuobelisco`
-- `D:/dev_extras/smart`
-- `D:/dev_extras/telegram_camera`
-- `D:/dev_extras/Firmware_Main_SpaceAI`
-- `D:/dev_extras/FirmwareWorks/llc`
-- `D:/dev_extras/FirmwareWorks/saipp`
-- `D:/dev_extras/FirmwareWorks/nio_firmware`
-- `D:/dev_extras/FirmwareWorks/nio_packet_endpoint`
-- `D:/dev_extras/FirmwareWorks/saithon`
-- `D:/dev_extras/FirmwareWorks/saimon`
+- `gpftw`
+- `GFramework`
+- `GODS`
+- `ROPP`
+- `CloneCraft`
+- `GDemos/shootemup`
+- `nwol`
+- `kitsurpg`
+- `battleground`
+- `ced`
+- [`rgb_tutorial`](https://github.com/RGBVillain/rgb_tutorial) and [`rgblib`](https://github.com/RGBVillain/rgblib)
+- `gpk`
+- `gpk_samples/ced_game`
+- `the_one`
+- `gpk_games`
+- `llc`
+- `blitter`
+- `blitdb`
+- `demo`
+- `neutralizer`
+- `sexybaires`
+- `tuobelisco`
+- `smart`
+- `telegram_camera`
+- Firmware Main SpaceAI
+- FirmwareWorks `llc`
+- FirmwareWorks `saipp`
+- FirmwareWorks `nio_firmware`
+- FirmwareWorks `nio_packet_endpoint`
+- FirmwareWorks `saithon`
+- FirmwareWorks `saimon`

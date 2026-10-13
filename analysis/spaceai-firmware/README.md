@@ -58,21 +58,21 @@ These counts exclude bundled third-party sources, Python virtual environments, g
 
 ## Documents
 
-- [System evolution](D:/dev_extras/analysis/spaceai-firmware/system-evolution.md)
-- [Final system inventory](D:/dev_extras/analysis/spaceai-firmware/final-system-inventory.md)
-- [Settings and remote management](D:/dev_extras/analysis/spaceai-firmware/settings-and-remote-management.md)
-- [Packet endpoint](D:/dev_extras/analysis/spaceai-firmware/packet-endpoint.md)
-- [Development lineage from the early engines and games to gpk, llc and the firmware](D:/dev_extras/analysis/spaceai-firmware/lineage-from-gpftw-to-firmware.md)
-- [Why use this architecture instead of React, Unreal, Unity or Godot?](D:/dev_extras/analysis/spaceai-firmware/architecture-versus-frameworks.md)
+- [System evolution](./system-evolution.md)
+- [Final system inventory](./final-system-inventory.md)
+- [Settings and remote management](./settings-and-remote-management.md)
+- [Packet endpoint](./packet-endpoint.md)
+- [Development lineage from the early engines and games to gpk, llc and the firmware](./lineage-from-gpftw-to-firmware.md)
+- [Why use this architecture instead of React, Unreal, Unity or Godot?](./architecture-versus-frameworks.md)
 
 ## Sources reviewed
 
-- `D:/dev_extras/Firmware_Main_SpaceAI`
-- `D:/dev_extras/FirmwareWorks/nio_firmware`
-- `D:/dev_extras/FirmwareWorks/saipp`
-- `D:/dev_extras/FirmwareWorks/saithon`
-- `D:/dev_extras/FirmwareWorks/saimon`
-- `D:/dev_extras/FirmwareWorks/nio_packet_endpoint`
+- Firmware Main SpaceAI
+- FirmwareWorks `nio_firmware`
+- FirmwareWorks `saipp`
+- FirmwareWorks `saithon`
+- FirmwareWorks `saimon`
+- FirmwareWorks `nio_packet_endpoint`
 - `firmware_main_spaceai.log` and `firmwareworks.log`
 
 The review deliberately omits credential values found in configuration files. Some archived settings contain material that appears suitable for authentication and should be removed or rotated before the repository or this analysis is published.
