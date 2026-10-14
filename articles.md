@@ -3,6 +3,7 @@
 ## Programming practices
 
 - [The cost of unnecessary engineering: a homepage case study](./homepage-case-study.html)
+- [The GUI Was Working. The Replacement Was the Bug.](./the-replacement-was-the-bug.md)
 - [Every engineering choice spends or saves a budget](./every-choice-has-a-cost.md)
 - [One sentence per page: LLC and the limits of TypeScript readability](./llc-vs-common-typescript.md)
 
